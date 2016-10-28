@@ -60,6 +60,7 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
     this.nextMish = mission;
     this.players = players;
     this.spies = spies;
+    this.fails = failures;
     spy = spies.indexOf(name)!=-1;
 
     if(spy){
