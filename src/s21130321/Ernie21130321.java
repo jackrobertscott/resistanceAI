@@ -24,17 +24,27 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
   private String players;
   private String spies;
   private String notSpies;
+  private String leader;
+  private String mishTeam;
 
   private boolean spy;
+  private boolean failedLast;
+
   private Random random;
-  private int numPlayers;
+
   private int nextMish;
   private int fails;
-  private boolean failedLast;
+  private int votingRound;
+
+
+
+
 
   public Ernie21130321(){
     random = new Random();
     notSpies = "";
+    failedLast = false;
+    votingRound = 0;
   }
 
   /**
@@ -47,14 +57,13 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * */
   public void get_status(String name, String players, String spies, int mission, int failures){
     this.name = name;
-    this.numPlayers = players.length();
+    this.nextMish = mission;
     this.players = players;
     this.spies = spies;
     spy = spies.indexOf(name)!=-1;
 
-    if(spy)
-    {
-      for(int i = 0; i < numPlayers; i++)
+    if(spy){
+      for(int i = 0; i < players.length(); i++)
       {
         char guy = players.charAt(i);
         if(spies.indexOf(guy) == -1){
@@ -62,9 +71,6 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
         }
       }
     }
-
-    this.nextMish = mission;
-    this.fails = failures;
   }
 
   /**
@@ -97,26 +103,45 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * @param leader the leader who proposed the mission
    * @param mission a String containing the names of all the agents in the mission
    **/
-  public void get_ProposedMission(String leader, String mission){}
+  public void get_ProposedMission(String leader, String mission){
+    votingRound++;
+    this.leader = leader;
+    this.mishTeam = mission;
+  }
 
   /**
    * Gets an agents vote on the last reported mission
    * @return true, if the agent votes for the mission, false, if they vote against it.
    * */
   public boolean do_Vote(){
-    return (random.nextInt(2)!=0);
     //(Voting) Approve missions on the fifth voting attempt.
     //(Voting) Approve any voting attempt in the first mission.
     //(Voting) Approve missions where self is the leader.
-    //(Voting) Reject teams of three not featuring self.
-    //(Voting) Reject missions with known spies on the team.
+    if(votingRound == 5) return true;
+    if(nextMish == 1) return true;
+    if(leader == name) return true;
 
-    //(Voting) (Spy) Approve missions with at least one spy if spies only need one mission to win.
-    //(Voting) (Spy) Reject missions where the entire team is spies.
-    //(Voting) (Spy) Reject missions with zero or both spies on the team.
-    //||
-    //(Voting) (Spy) Approve missions with at least one spy on the team.
+    if(!spy){
+      //(Voting) Reject teams of three not featuring self.
+      if(players.length() == 5 || (mishTeam.indexOf(name) == -1)) return false;
 
+      //(Voting) Reject missions with known spies on the team.
+        //if beyesian probability is high to fail the mission false limit determined by trial and error
+      return true;
+    }
+    else{
+      int numSpiesOnMish = 0;
+      for(int i = 0; i < mishTeam.length(); i++)
+      {
+        if(spies.indexOf(mishTeam.charAt(i)) != -1) numSpiesOnMish++;
+      }
+      //(Voting) (Spy) Approve missions with at least one spy if spies only need one mission to win.
+      if(fails == 2 || (numSpiesOnMish > 0)) return true;
+      //(Voting) (Spy) Reject missions where the entire team is spies.
+      if(numSpiesOnMish != 1) return false;
+
+      return true;
+    }
   }
 
   /**
@@ -137,7 +162,8 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * @return true if agent betrays, false otherwise
    **/
   public boolean do_Betray(){
-    return (spy?random.nextInt(2)!=0:false);
+    if(spy) return true;
+    else return false;
   }
 
   /**
@@ -159,16 +185,7 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * @return a string containing the name of each accused agent.
    * */
   public String do_Accuse(){
-    int number = random.nextInt(players.length());
-    HashSet<Character> team = new HashSet<Character>();
-    for(int i = 0; i<number; i++){
-      char c = players.charAt(random.nextInt(players.length()));
-      while(team.contains(c)) c = players.charAt(random.nextInt(players.length()));
-      team.add(c);
-    }
-    String tm = "";
-    for(Character c: team)tm+=c;
-    return tm;
+    return "";
   }
 
   /**
