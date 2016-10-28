@@ -131,18 +131,23 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
       return true;
     }
     else{
-      int numSpiesOnMish = 0;
-      for(int i = 0; i < mishTeam.length(); i++)
-      {
-        if(spies.indexOf(mishTeam.charAt(i)) != -1) numSpiesOnMish++;
-      }
+      int sOM = numSpiesOnMish();
       //(Voting) (Spy) Approve missions with at least one spy if spies only need one mission to win.
-      if(fails == 2 || (numSpiesOnMish > 0)) return true;
+      if(fails == 2 || (sOM > 0)) return true;
       //(Voting) (Spy) Reject missions where the entire team is spies.
-      if(numSpiesOnMish != 1) return false;
+      if(sOM != 1) return false;
 
       return true;
     }
+  }
+
+  private int numSpiesOnMish(){
+    int numSpiesOnMish = 0;
+    for(int i = 0; i < mishTeam.length(); i++)
+    {
+      if(spies.indexOf(mishTeam.charAt(i)) != -1) numSpiesOnMish++;
+    }
+    return numSpiesOnMish;
   }
 
   /**
@@ -163,8 +168,15 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * @return true if agent betrays, false otherwise
    **/
   public boolean do_Betray(){
-    if(spy) return true;
-    else return false;
+    if (!spy) {
+      return false; // should only be called if is spy... but just incase
+    }
+    else{
+      int sOM = numSpiesOnMish();
+      if(sOM > 2) return false; //more than one spy then let them fail it.
+      return true;
+    }
+
   }
 
   /**
