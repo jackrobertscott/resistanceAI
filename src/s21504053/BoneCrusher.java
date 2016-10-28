@@ -18,12 +18,15 @@ import java.util.*;
 
 public class BoneCrusher implements cits3001_2016s2.Agent {
 
+    final static boolean DEBUG = true;
+
     private String name; // agent name
     private String players; // all players in the game
     private Random random;
 
     private int round; // mission number
     private String team; // members on the mission executed
+    private String leader; // mission leader proposed
     private HashSet<Integer> failures; // set of failed missions
 
     private boolean spy; // is this agent a spy
@@ -50,7 +53,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
 
         this.round = round;
         if (this.failures.size() != failures) this.failures.add(round);
-        debug(this.failures.toString());
+        debug("Missions failed: " + this.failures.toString());
 
         if (spies.indexOf('?') == -1) {
             this.spies = spies;
@@ -83,11 +86,29 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     /**
      * Provides information of a given round.
      *
-     * @param leader  the leader who proposed the round
-     * @param mission a String containing the names of all the agents in the round
+     * @param leader the leader who proposed the round
+     * @param team   a String containing the names of all the agents in the round
      **/
-    public void get_ProposedMission(String leader, String mission) {
+    public void get_ProposedMission(String leader, String team) {
         // update data with who nominated who...
+        this.leader = leader;
+        this.team = team;
+    }
+
+    /**
+     * @param names the player group to check
+     * @return
+     */
+    private boolean containsOneOrMore(String group, String names) {
+        char[] checked = group.toCharArray();
+        boolean contains = false;
+        for (int i = 0; i < checked.length; i++) {
+            if (names.indexOf(checked[i]) != -1) {
+                contains = true;
+                break;
+            }
+        }
+        return contains;
     }
 
     /**
@@ -96,11 +117,17 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return true, if the agent votes for the round, false, if they vote against it.
      */
     public boolean do_Vote() {
-        if (spy) {
-            return true;
-        } else {
-            return false;
+        if (spy) { // is government spy
+            return containsOneOrMore(team, spies); // RULE: approve mission if a spy is on it
+        } else { // is resistance
+            if (leader.equals(name)) {
+                return true; // RULE: approve mission if I am leader
+            }
+            if (spies.length() > 0) {
+                return !containsOneOrMore(team, spies); // RULE: don't approve if spy is on mission team
+            }
         }
+        return (random.nextInt(2) != 0); // Keep 'em on their toes
     }
 
     /**
@@ -118,7 +145,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @param team the Agents being sent on a round
      **/
     public void get_Mission(String team) {
-        this.team = team;
+        // irrelevant...
     }
 
     /**
@@ -174,6 +201,8 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     }
 
     public void debug(String msg) {
-        System.out.println("~~DEBUG: " + msg);
+        if (DEBUG) {
+            System.out.println("~~~DEBUG: " + msg);
+        }
     }
 }
