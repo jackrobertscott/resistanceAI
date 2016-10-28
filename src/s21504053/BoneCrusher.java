@@ -77,12 +77,12 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         HashSet<Character> nominees = new HashSet<Character>();
         nominees.add(name.charAt(0)); // RULE: add self to the nominees
 
-        for (int i = 0; i < number; i++) { // RULE: do not add any (other) spies
+        for (int i = 0; i < number; i++) {
             char c = players.charAt(random.nextInt(players.length()));
             while (nominees.contains(c) || spies.indexOf(c) != -1) {
                 c = players.charAt(random.nextInt(players.length()));
             }
-            nominees.add(c);
+            nominees.add(c); // RULE: do not add any (other) spies
         }
 
         String nominated = "";
@@ -135,7 +135,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (spiesOnMission == 0) {
                 return false; // RULE: reject if no spies are on mission
             }
-            if (this.failures.size() == 2) {
+            if (failures.size() == 2) {
                 return true; // RULE: approve mission if a spy is on it and nearly won
             }
             if (team.length() == spiesOnMission) {
@@ -186,7 +186,22 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray() {
-        // this is only run if you are a spy
+        if (!spy) {
+            return false; // should only be called if is spy... but just incase
+        }
+        if (round + failures.size() >= 5) {
+            return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
+        }
+        if (failures.size() == 2) {
+            return true; // RULE: winning move!
+        }
+        int spiesOnMission = numberContained(team, spies);
+        if (team.length() == spiesOnMission) {
+            return false; // RULE: don't betray if the whole team are spies
+        }
+        if (spiesOnMission == 1 && team.indexOf(name) != 0) {
+            return true;
+        }
         return (spy ? random.nextInt(2) != 0 : false);
     }
 
