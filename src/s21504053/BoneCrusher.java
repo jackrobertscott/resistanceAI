@@ -74,15 +74,21 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return a String containing the names of all the agents in a round
      */
     public String do_Nominate(int number) {
-        HashSet<Character> team = new HashSet<Character>();
-        for (int i = 0; i < number; i++) {
+        HashSet<Character> nominees = new HashSet<Character>();
+        nominees.add(name.charAt(0)); // RULE: add self to the nominees
+
+        for (int i = 0; i < number; i++) { // RULE: do not add any (other) spies
             char c = players.charAt(random.nextInt(players.length()));
-            while (team.contains(c)) c = players.charAt(random.nextInt(players.length()));
-            team.add(c);
+            while (nominees.contains(c) || spies.indexOf(c) != -1) {
+                c = players.charAt(random.nextInt(players.length()));
+            }
+            nominees.add(c);
         }
-        String tm = "";
-        for (Character c : team) tm += c;
-        return tm;
+
+        String nominated = "";
+        for (Character c : nominees) nominated += c;
+        debug("NOMINATED: "+nominated);
+        return nominated;
     }
 
     /**
@@ -98,6 +104,8 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     }
 
     /**
+     * Get the number of mentioned names in the group
+     *
      * @param names the player group to check
      * @return
      */
@@ -147,7 +155,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (team.length() == 3 && team.indexOf(name) == -1) {
                 return false; // RULE: don't approve if team of 3 and agent not on team
             }
-            if (spies.length() > 0 && spiesOnMission > 0) {
+            if (spiesOnMission > 0) {
                 return false; // RULE: don't approve if spy is on mission team
             }
             return true; // RULE: approve all other missions
@@ -193,7 +201,6 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         }
     }
 
-
     /**
      * Optional method to accuse other Agents of being spies.
      * Default action should return the empty String.
@@ -224,6 +231,12 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_Accusation(String accuser, String accused) {
     }
 
+
+    /**
+     * Log debug text to the console when set to debug mode
+     *
+     * @param msg the message to log
+     */
     public void debug(String msg) {
         if (DEBUG) {
             System.out.println("~~~DEBUG: " + msg);
