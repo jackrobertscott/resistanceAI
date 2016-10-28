@@ -101,16 +101,15 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @param names the player group to check
      * @return
      */
-    private boolean containsOneOrMore(String group, String names) {
+    private int numberContained(String group, String names) {
+        int contained = 0;
         char[] checked = group.toCharArray();
-        boolean contains = false;
         for (int i = 0; i < checked.length; i++) {
             if (names.indexOf(checked[i]) != -1) {
-                contains = true;
-                break;
+                contained++;
             }
         }
-        return contains;
+        return contained;
     }
 
     /**
@@ -123,10 +122,21 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         if (round == 1) {
             return true; // RULE: approve any mission on the first round
         }
+        int spiesOnMission = numberContained(team, spies);
         if (spy) { // is government spy
-            if (this.failures.size() == 2) {
-                return containsOneOrMore(team, spies); // RULE: approve mission if a spy is on it and nearly won
+            if (spiesOnMission == 0) {
+                return false; // RULE: reject if no spies are on mission
             }
+            if (this.failures.size() == 2) {
+                return true; // RULE: approve mission if a spy is on it and nearly won
+            }
+            if (team.length() == spiesOnMission) {
+                return false; // RULE: don't approve a mission with only spies
+            }
+            if (spies.length() == spiesOnMission) {
+                return false; // RULES: reject mission with zero or both spies on mission
+            }
+            return true; // RULE: approve if atleast one spy is on the team
         } else { // is resistance
             if (votes == 5) {
                 return true; // RULE: approve 5th mission else government wins
@@ -134,11 +144,14 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (leader.equals(name)) {
                 return true; // RULE: approve mission if I am leader
             }
-            if (spies.length() > 0) {
-                return !containsOneOrMore(team, spies); // RULE: don't approve if spy is on mission team
+            if (team.length() == 3 && team.indexOf(name) == -1) {
+                return false; // RULE: don't approve if team of 3 and agent not on team
             }
+            if (spies.length() > 0 && spiesOnMission > 0) {
+                return false; // RULE: don't approve if spy is on mission team
+            }
+            return true; // RULE: approve all other missions
         }
-        return (random.nextInt(2) != 0); // Keep 'em on their toes
     }
 
     /**
