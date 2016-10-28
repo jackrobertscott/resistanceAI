@@ -12,15 +12,23 @@ import java.util.*;
  * @author Tim French
  * **/
 
-
-public class RandomAgent implements Agent{
+/*
+* Tahmer Hijjawi
+* 21130321
+*/
+public class Ernie21130321 implements Agent{
 
   private String name;
-  private String players;
+  private char[] playersA;
+  private char[] spiesA;
   private boolean spy;
   private Random random;
+  private int numPlayers;
+  private int nextMish;
+  private int fails;
+  private boolean failedLast;
 
-  public RandomAgent(){
+  public Ernie21130321(){
     random = new Random();
   }
 
@@ -34,8 +42,14 @@ public class RandomAgent implements Agent{
    * */
   public void get_status(String name, String players, String spies, int mission, int failures){
     this.name = name;
-    this.players = players;
+    this.numPlayers = players.length();
+
+    this.playersA = players.toCharArray();
+    this.spiesA = spies.toCharArray();
+
     spy = spies.indexOf(name)!=-1;
+    this.nextMish = mission;
+    this.fails = failures;
   }
 
   /**
@@ -46,15 +60,23 @@ public class RandomAgent implements Agent{
    * @return a String containing the names of all the agents in a mission
    * */
   public String do_Nominate(int number){
-    HashSet<Character> team = new HashSet<Character>();
-    for(int i = 0; i<number; i++){
-      char c = players.charAt(random.nextInt(players.length()));
-      while(team.contains(c)) c = players.charAt(random.nextInt(players.length()));
-      team.add(c);
+    if(spy)
+    {
+      String team = this.name;
+      while(team.length() != number)
+      {
+        char guy = playersA[random.nextInt(numPlayers)];
+        if(spiesA.indexOf(guy)==-1)
+        {
+          team = team + guy;
+        }
+      }
     }
-    String tm = "";
-    for(Character c: team)tm+=c;
-    return tm;
+    else{
+
+    }
+    //(Selection) Include itself when selecting teams; lowers probability of spy on team
+    //(Selection) (Spy) Include one spy when selecting teams (always self).
   }
 
   /**
@@ -70,6 +92,18 @@ public class RandomAgent implements Agent{
    * */
   public boolean do_Vote(){
     return (random.nextInt(2)!=0);
+    //(Voting) Approve missions on the fifth voting attempt.
+    //(Voting) Approve any voting attempt in the first mission.
+    //(Voting) Approve missions where self is the leader.
+    //(Voting) Reject teams of three not featuring self.
+    //(Voting) Reject missions with known spies on the team.
+
+    //(Voting) (Spy) Approve missions with at least one spy if spies only need one mission to win.
+    //(Voting) (Spy) Reject missions where the entire team is spies.
+    //(Voting) (Spy) Reject missions with zero or both spies on the team.
+    //||
+    //(Voting) (Spy) Approve missions with at least one spy on the team.
+
   }
 
   /**
@@ -97,7 +131,11 @@ public class RandomAgent implements Agent{
    * Reports the number of people who betrayed the mission
    * @param traitors the number of people on the mission who chose to betray (0 for success, greater than 0 for failure)
    **/
-  public void get_Traitors(int traitors){}
+  public void get_Traitors(int traitors){
+    if(traitors != 0){
+      failedLast = true;
+    }
+  }
 
 
   /**
