@@ -54,7 +54,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         this.players = players;
 
         this.round = round;
-        if (this.failures.size() != failures) this.failures.add(round);
+        if (this.failures.size() != failures) this.failures.add(round - 1);
         debug("Missions failed: " + this.failures.toString());
 
         if (spies.indexOf('?') == -1) {
@@ -120,8 +120,13 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      */
     public boolean do_Vote() {
         votes++;
+        if (round == 1) {
+            return true; // RULE: approve any mission on the first round
+        }
         if (spy) { // is government spy
-            return containsOneOrMore(team, spies); // RULE: approve mission if a spy is on it
+            if (this.failures.size() == 2) {
+                return containsOneOrMore(team, spies); // RULE: approve mission if a spy is on it and nearly won
+            }
         } else { // is resistance
             if (votes == 5) {
                 return true; // RULE: approve 5th mission else government wins
