@@ -19,8 +19,10 @@ import java.util.*;
 public class Ernie21130321 implements Agent{
 
   private String name;
-  private char[] playersA;
-  private char[] spiesA;
+  private String players;
+  private String spies;
+  private String notSpies;
+
   private boolean spy;
   private Random random;
   private int numPlayers;
@@ -30,6 +32,7 @@ public class Ernie21130321 implements Agent{
 
   public Ernie21130321(){
     random = new Random();
+    notSpies = "";
   }
 
   /**
@@ -43,11 +46,21 @@ public class Ernie21130321 implements Agent{
   public void get_status(String name, String players, String spies, int mission, int failures){
     this.name = name;
     this.numPlayers = players.length();
-
-    this.playersA = players.toCharArray();
-    this.spiesA = spies.toCharArray();
-
+    this.players = players;
+    this.spies = spies;
     spy = spies.indexOf(name)!=-1;
+
+    if(spy)
+    {
+      for(int i = 0; i < numPlayers; i++)
+      {
+        char guy = players.charAt(i);
+        if(spies.indexOf(guy) == -1){
+          notSpies += guy;
+        }
+      }
+    }
+
     this.nextMish = mission;
     this.fails = failures;
   }
@@ -62,15 +75,8 @@ public class Ernie21130321 implements Agent{
   public String do_Nominate(int number){
     if(spy)
     {
-      String team = this.name;
-      while(team.length() != number)
-      {
-        char guy = playersA[random.nextInt(numPlayers)];
-        if(spiesA.indexOf(guy)==-1)
-        {
-          team = team + guy;
-        }
-      }
+      String team = name;
+      team += notSpies.substring(0, number - 1);
     }
     else{
 
