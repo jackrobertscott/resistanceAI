@@ -28,6 +28,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private String team; // members on the mission executed
     private String leader; // mission leader proposed
     private HashSet<Integer> failures; // set of failed missions
+    private int votes; // number of votes for executed round
 
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
@@ -36,6 +37,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public BoneCrusher() {
         random = new Random();
         failures = new HashSet<Integer>();
+        votes = 0;
     }
 
     /**
@@ -112,14 +114,18 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     }
 
     /**
-     * Gets an agents vote on the last reported round
+     * Gets an agents votes on the last reported round
      *
-     * @return true, if the agent votes for the round, false, if they vote against it.
+     * @return true, if the agent votes for the round, false, if they votes against it.
      */
     public boolean do_Vote() {
+        votes++;
         if (spy) { // is government spy
             return containsOneOrMore(team, spies); // RULE: approve mission if a spy is on it
         } else { // is resistance
+            if (votes == 5) {
+                return true; // RULE: approve 5th mission else government wins
+            }
             if (leader.equals(name)) {
                 return true; // RULE: approve mission if I am leader
             }
@@ -145,7 +151,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @param team the Agents being sent on a round
      **/
     public void get_Mission(String team) {
-        // irrelevant...
+        votes = 0; // reset votes for the next round
     }
 
     /**
