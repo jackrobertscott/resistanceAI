@@ -1,5 +1,5 @@
 #!/bin/bash
-echo "players =  $2" >> out.csv
+echo "players =  $2" >> $3.csv
 wha=0
 if [ -n "$1" ]
 then
@@ -17,7 +17,7 @@ then
       let apples=apples+1
     done
     ) > out.txt
-    ./mmm.r < out.txt >> out.csv
+    ./mmm.r < out.txt >> $3.csv
     let wha=wha+1
   done
 fi

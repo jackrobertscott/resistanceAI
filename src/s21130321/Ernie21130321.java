@@ -1,3 +1,10 @@
+
+/*
+* Tahmer Hijjawi
+* 21130321
+* version v0.11
+*/
+
 package s21130321;
 
 import java.util.*;
@@ -14,10 +21,6 @@ import cits3001_2016s2.*;
  * @author Tim French
  * **/
 
-/*
-* Tahmer Hijjawi
-* 21130321
-*/
 public class Ernie21130321 implements cits3001_2016s2.Agent{
 
   private String name;
@@ -91,8 +94,11 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
     }
     else{
       //TODO: get lowest probability of being a spy. and add to team with always include me.
-      String team = "";
-      team += players.substring(0, number);
+      String team = name;
+      for(int i = 0; i < number - 1; i++)
+      {
+        if(team.indexOf(players.charAt(i))==-1) team += players.charAt(i);
+      }
       return team;
     }
     //(Selection) Include itself when selecting teams; lowers probability of spy on team
@@ -175,10 +181,12 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
     }
     else{
       int sOM = numSpiesOnMish();
+      if (fails == 2) return true;
+      if (fails == 1 && nextMish == 4) return true;
+      if(mishTeam.length() == 2) return false; //dont fail if its only you and another.
       if(sOM > 2) return false; //more than one spy then let them fail it.
       return true;
     }
-
   }
 
   /**
