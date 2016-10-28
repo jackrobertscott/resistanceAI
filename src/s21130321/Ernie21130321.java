@@ -161,7 +161,9 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * Should be able to be inferred from tell_ProposedMission and tell_Votes, but included for completeness.
    * @param mission the Agents being sent on a mission
    **/
-  public void get_Mission(String mission){}
+  public void get_Mission(String mission){
+    votingRound = 0;
+  }
 
   /**
    * Agent chooses to betray or not.
