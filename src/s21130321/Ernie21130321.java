@@ -1,6 +1,8 @@
-package cits3001_2016s2;
+package s21130321;
 
 import java.util.*;
+
+import cits3001_2016s2.*;
 
 /**
  * A Java class for an agent to play in Resistance.
@@ -16,7 +18,7 @@ import java.util.*;
 * Tahmer Hijjawi
 * 21130321
 */
-public class Ernie21130321 implements Agent{
+public class Ernie21130321 implements cits3001_2016s2.Agent{
 
   private String name;
   private String players;
@@ -75,11 +77,16 @@ public class Ernie21130321 implements Agent{
   public String do_Nominate(int number){
     if(spy)
     {
+      //TODO: randomise the order of the team string
       String team = name;
       team += notSpies.substring(0, number - 1);
+      return team;
     }
     else{
-
+      //TODO: get lowest probability of being a spy. and add to team with always include me.
+      String team = "";
+      team += players.substring(0, number);
+      return team;
     }
     //(Selection) Include itself when selecting teams; lowers probability of spy on team
     //(Selection) (Spy) Include one spy when selecting teams (always self).
