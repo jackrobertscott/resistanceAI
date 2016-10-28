@@ -87,7 +87,6 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
 
         String nominated = "";
         for (Character c : nominees) nominated += c;
-        debug("NOMINATED: "+nominated);
         return nominated;
     }
 
@@ -144,7 +143,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (spies.length() == spiesOnMission) {
                 return false; // RULES: reject mission with zero or both spies on mission
             }
-            return true; // RULE: approve if atleast one spy is on the team
+            return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
         } else { // is resistance
             if (votes == 5) {
                 return true; // RULE: approve 5th mission else government wins
@@ -158,7 +157,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (spiesOnMission > 0) {
                 return false; // RULE: don't approve if spy is on mission team
             }
-            return true; // RULE: approve all other missions
+            return touchOfRandom(true); // RULE: approve all other missions
         }
     }
 
@@ -200,7 +199,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             return false; // RULE: don't betray if the whole team are spies
         }
         if (spiesOnMission == 1 && team.indexOf(name) != 0) {
-            return true;
+            return touchOfRandom(true);
         }
         return (spy ? random.nextInt(2) != 0 : false);
     }
@@ -246,6 +245,16 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_Accusation(String accuser, String accused) {
     }
 
+    /**
+     * This function is to slightly put off compeditors by making slightly random decisions.
+     * This should only be used on non-critical return values or values that will not lose the game
+     *
+     * @param expected the value to slightly randomise
+     * @return a slightly randomised value
+     */
+    public boolean touchOfRandom(boolean expected) {
+        return random.nextInt(10) == 1 ? !expected : expected;
+    }
 
     /**
      * Log debug text to the console when set to debug mode
