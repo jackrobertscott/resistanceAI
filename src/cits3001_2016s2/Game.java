@@ -1,6 +1,8 @@
 package cits3001_2016s2;
 
 
+import s21504053.GroundsKeeper;
+
 import java.util.*;
 import java.io.*;
 /**
@@ -144,7 +146,7 @@ public class Game{
       if(spies.contains(c)){
         stopwatchOn(); players.get(c).get_status(""+c,playerString,spyString,round,fails); stopwatchOff(100,c);
       }
-      else{ 
+      else{
         stopwatchOn(); players.get(c).get_status(""+c,playerString,resString,round,fails); stopwatchOff(100,c);
       }
     }
@@ -321,18 +323,23 @@ public class Game{
    * Sets up game with random agents and plays
    **/
   public static void main(String[] args){
-    /* Run a single game
-    Game g = new Game();
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'A');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
-    g.setup();
-    g.play();
-    */
-    /*Run a tournament*/
-  }    
+    GroundsKeeper gk = new GroundsKeeper();
+    Game g;
+
+    for (int i = 0; i < 500; i++) {
+      g = new Game();
+      g.stopwatchOn();g.addPlayer(new s21504053.BoneCrusher(gk));g.stopwatchOff(1000,'A');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
+      g.setup();
+      g.play();
+    }
+
+    gk.printLongTermSpy();
+    gk.printLongTermNonSpy();
+  }
   
 
 }  

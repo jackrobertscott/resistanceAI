@@ -17,21 +17,23 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
 
     private String name; // agent name
     private String players; // all players in the game
-    private Model model;
+    private GroundsKeeper gk;
+    private HashMap<Move, Integer[]> shrub;
     private Random random;
 
     private int round; // mission number
     private String team; // members on the mission executed
+    private String yays; // members who voted for mission
     private String leader; // mission leader proposed
     private HashSet<Integer> failures; // set of failed missions
     private int votes; // number of votes for executed round
-    private boolean agreed; // agreed to last vote
 
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
 
-    public BoneCrusher() {
-        model = new Model();
+    public BoneCrusher(GroundsKeeper groundsKeeper) {
+        gk = groundsKeeper;
+        shrub = gk.plant();
         random = new Random();
         failures = new HashSet<Integer>();
         votes = 0;
@@ -53,16 +55,17 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         this.round = round;
         if (this.failures.size() != failures) { // mission failed
             this.failures.add(round - 1);
+
             if (round > 1) {
-                model.act(Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
-                model.act(Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));
-                model.act(Move.VOTED_TEAM_UNSUCCESSFUL, agreed);
+                gk.feed(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
+                gk.feed(shrub, Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));
+                gk.feed(shrub, Move.VOTED_TEAM_UNSUCCESSFUL, yays.contains(name));
             }
         } else { // mission succeeded
             if (round > 1) {
-                model.act(Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(name));
-                model.act(Move.ON_TEAM_SUCCESSFUL, team.contains(name));
-                model.act(Move.VOTED_TEAM_SUCCESSFUL, agreed);
+                gk.feed(shrub, Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(name));
+                gk.feed(shrub, Move.ON_TEAM_SUCCESSFUL, team.contains(name));
+                gk.feed(shrub, Move.VOTED_TEAM_SUCCESSFUL, yays.contains(name));
             }
         }
 
@@ -74,8 +77,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         }
 
         if (round == 6) { // end of game
-            model.end(this.failures.size() > 2 ? spy : !spy, spy);
-            debug(model.toString());
+            gk.reap(shrub, this.failures.size() > 2 ? spy : !spy, spy);
         }
     }
 
@@ -140,40 +142,38 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public boolean do_Vote() {
         votes++;
         if (round == 1) {
-            agreed = true; // RULE: approve any mission on the first round
-        } else {
-            int spiesOnMission = numberContained(team, spies);
-            if (spy) { // is government spy
-                if (spiesOnMission == 0) {
-                    agreed = false; // RULE: reject if no spies are on mission
-                }
-                if (failures.size() == 2) {
-                    agreed = true; // RULE: approve mission if a spy is on it and nearly won
-                }
-                if (team.length() == spiesOnMission) {
-                    agreed = false; // RULE: don't approve a mission with only spies
-                }
-                if (spies.length() == spiesOnMission) {
-                    agreed = false; // RULES: reject mission with zero or both spies on mission
-                }
-                return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
-            } else { // is resistance
-                if (votes == 5) {
-                    agreed = true; // RULE: approve 5th mission else government wins
-                }
-                if (leader.equals(name)) {
-                    agreed = true; // RULE: approve mission if I am leader
-                }
-                if (team.length() == 3 && team.contains(name)) {
-                    agreed = false; // RULE: don't approve if team of 3 and agent not on team
-                }
-                if (spiesOnMission > 0) {
-                    agreed = false; // RULE: don't approve if spy is on mission team
-                }
-                agreed = touchOfRandom(true); // RULE: approve all other missions
-            }
+            return true; // RULE: approve any mission on the first round
         }
-        return agreed;
+        int spiesOnMission = numberContained(team, spies);
+        if (spy) { // is government spy
+            if (spiesOnMission == 0) {
+                return false; // RULE: reject if no spies are on mission
+            }
+            if (failures.size() == 2) {
+                return true; // RULE: approve mission if a spy is on it and nearly won
+            }
+            if (team.length() == spiesOnMission) {
+                return false; // RULE: don't approve a mission with only spies
+            }
+            if (spies.length() == spiesOnMission) {
+                return false; // RULES: reject mission with zero or both spies on mission
+            }
+            return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
+        } else { // is resistance
+            if (votes == 5) {
+                return true; // RULE: approve 5th mission else government wins
+            }
+            if (leader.equals(name)) {
+                return true; // RULE: approve mission if I am leader
+            }
+            if (team.length() == 3 && team.contains(name)) {
+                return false; // RULE: don't approve if team of 3 and agent not on team
+            }
+            if (spiesOnMission > 0) {
+                return false; // RULE: don't approve if spy is on mission team
+            }
+            return touchOfRandom(true); // RULE: approve all other missions
+        }
     }
 
     /**
@@ -182,6 +182,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @param yays the names of the agents who voted for the round
      **/
     public void get_Votes(String yays) {
+        this.yays = yays;
     }
 
     /**
