@@ -1,6 +1,6 @@
 package cits3001_2016s2;
 
-import s21130321.*;
+
 import java.util.*;
 import java.io.*;
 /**
@@ -40,7 +40,6 @@ public class Game{
    * */
   public Game(String fName){
     logFile = new File(fName);
-    logging = true;
     init();
   }
 
@@ -63,13 +62,13 @@ public class Game{
   private void log(String msg){
     if(logging){
       try{
-        FileWriter log = new FileWriter(logFile);
+        FileWriter log = new FileWriter(logFile, true);
         log.write(msg);
         log.close();
       }catch(IOException e){e.printStackTrace();}
     }
     System.out.println(msg);
-  }
+  }  
 
 
   /**
@@ -116,7 +115,7 @@ public class Game{
     }
   }
 
-  /**
+  /** 
    * Starts a timer for Agent method calls
    * */
   private void stopwatchOn(){
@@ -145,7 +144,7 @@ public class Game{
       if(spies.contains(c)){
         stopwatchOn(); players.get(c).get_status(""+c,playerString,spyString,round,fails); stopwatchOff(100,c);
       }
-      else{
+      else{ 
         stopwatchOn(); players.get(c).get_status(""+c,playerString,resString,round,fails); stopwatchOff(100,c);
       }
     }
@@ -187,7 +186,7 @@ public class Game{
    int votes = 0;
    String yays = "";
    for(Character c: players.keySet()){
-      stopwatchOn();
+      stopwatchOn(); 
       if(players.get(c).do_Vote()){
         votes++;
         yays+=c;
@@ -200,12 +199,12 @@ public class Game{
       stopwatchOff(100,c);
     }
     log(votes+" votes for: "+yays);
-    return (votes>numPlayers/2);
+    return (votes>numPlayers/2);  
   }
 
   /**
    * Polls the mission team on whether they betray or not, and reports the result.
-   * First it informs all players of the team being sent on the mission.
+   * First it informs all players of the team being sent on the mission. 
    * Then polls each agent who goes on the mission on whether or not they betray the mission.
    * It reports to each agent the number of betrayals.
    * @param team A string with one character for each member of the team.
@@ -229,7 +228,7 @@ public class Game{
       stopwatchOff(100,c);
     }
     log(traitors +(traitors==1?" spy ":" spies ")+ "betrayed the mission");
-    return traitors;
+    return traitors;  
   }
 
   /**
@@ -267,7 +266,7 @@ public class Game{
           players.get(a).get_Accusation(c+"", accusations.get(c));
           stopwatchOff(100,c);
         }
-      }
+      }  
     }
     if(fails>2) log("Government Wins! "+fails+" missions failed.");
     else log("Resistance Wins! "+fails+" missions failed.");
@@ -277,77 +276,6 @@ public class Game{
 
 
 
-  static class Competitor implements Comparable{
-    private Class agent;
-    private String name;
-    private String authors;
-    public int spyWins;
-    public int spyPlays;
-    public int resWins;
-    public int resPlays;
-
-    public Competitor(Agent agent, String name, String authors){
-      this.agent = agent.getClass();
-      this.name = name;
-      this.authors = authors;
-    }
-
-    public int compareTo(Object o){
-      try{
-        Competitor c = (Competitor) o;
-        return (int)(1000*(this.winRate()-c.winRate()));
-      }
-      catch(Exception e){return 1;}
-    }
-
-    public Agent getAgent(){
-     try{return (Agent)agent.newInstance();}
-     catch(Exception e){return null;}
-    }
-
-    public String getName(){return name;}
-
-    public String getAuthors(){return authors;}
-
-    public void spyWin(){
-      spyWins++;spyPlays++;
-    }
-
-    public void spyLoss(){
-      spyPlays++;
-    }
-
-    public void resWin(){
-      resWins++;resPlays++;
-    }
-
-    public void resLoss(){
-      resPlays++;
-    }
-
-    public double spyWinRate(){
-      return (1.0*spyWins)/spyPlays;
-    }
-
-    public double resWinRate(){
-      return (1.0*resWins)/resPlays;
-    }
-
-    public double winRate(){
-      return (1.0*(spyWins+resWins))/(spyPlays+resPlays);
-    }
-
-    public String toString(){
-      return "<tr><td>"+name+
-        "</td><td>"+authors+
-        "</td><td>"+spyWins+
-        "</td><td>"+spyPlays+
-        "</td><td>"+resWins+
-        "</td><td>"+resPlays+
-        "</td><td>"+winRate()+
-        "</td></tr>\n";
-    }
-  }
 
   public static String tournament(Competitor[] agents, int rounds){
     Random tRand = new Random();
@@ -376,45 +304,51 @@ public class Game{
               else cc.resWin();
             }
           g.log(cc.toString());
-          }
+          }  
         }
-      }
+      }    
     }
     Arrays.sort(agents);
-    String ret =
+    String ret = 
     "<html><body><table><tr><th>Name</th><th>Author</th><th>Spy Wins</th><th>Spy Plays</th><th>Res Wins</th><th>Res Plays</th><th>Win Rate</th></tr>";
     for(int i = 0; i< agents.length; i++)
       ret+= agents[i];
-    return ret+"</table></body></html>";
+    return ret+"</table></body></html>";  
   }
 
 
   /**
    * Sets up game with random agents and plays
    **/
-  public static void main (String[] args){
-    // Run a single game
+  public static void main(String[] args){
+    /* Run a single game
     Game g = new Game();
-    char[] things = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
-    int x = Integer.parseInt(args[0]);
-    //g.stopwatchOn();g.addPlayer(new HumanAgent());g.stopwatchOff(1000,things[9]);
-    for(int i = 0; i < x; i++)
-    {
-      g.stopwatchOn();g.addPlayer(new s21130321.Ernie21130321());g.stopwatchOff(1000,things[i]);
-    }
+    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'A');
+    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
+    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
+    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
+    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
     g.setup();
     g.play();
-
-    /*Run a tournament
-    try{
-      File f = new File("Results.html");
-      FileWriter fw = new FileWriter(f);
-      Competitor[] contenders = {new Competitor(new RandomAgent(),"Randy","Tim")};
-      fw.write(tournament(contenders, 10));
-      fw.close();
-    }
-    catch(IOException e){System.out.println("IO fail");}
     */
-  }
+    /*Run a tournament*/
+  }    
+  
 
-}
+}  
+
+
+
+
+
+        
+        
+
+
+
+
+
+
+
+
+
