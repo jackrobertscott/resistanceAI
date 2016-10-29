@@ -1,5 +1,5 @@
 import cits3001_2016s2.*;
-import sYourStudentNumber.*;
+import s21504053.*;
 
 import java.util.*;
 import java.io.*;
@@ -13,7 +13,7 @@ public class Run{
       FileWriter fw = new FileWriter(f);
       Competitor[] contenders = {
         new Competitor(new cits3001_2016s2.RandomAgent(),"Randy","Tim"),
-        new Competitor(new sYourStudentNumber.RandomAgent(),"Brandy","Tim")
+        new Competitor(new s21504053.BoneCrusher(),"BoneCrusher","Jack Scott")
         };
       fw.write(Game.tournament(contenders, 500));
       fw.close();

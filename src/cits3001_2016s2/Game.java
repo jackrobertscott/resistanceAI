@@ -40,7 +40,6 @@ public class Game{
    * */
   public Game(String fName){
     logFile = new File(fName);
-    logging = true;
     init();
   }
 
