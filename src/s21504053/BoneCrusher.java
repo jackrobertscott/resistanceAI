@@ -14,14 +14,13 @@ import java.util.*;
  *
  * @author Jack Scott
  **/
-
-
 public class BoneCrusher implements cits3001_2016s2.Agent {
 
     final static boolean DEBUG = true;
 
     private String name; // agent name
     private String players; // all players in the game
+    private HashMap<Character, Model> models;
     private Random random;
 
     private int round; // mission number
@@ -33,8 +32,8 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
 
-
     public BoneCrusher() {
+        models = new HashMap<Character, Model>();
         random = new Random();
         failures = new HashSet<Integer>();
         votes = 0;
@@ -52,6 +51,11 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
+        if (models.size() == 0) {
+            for (char player: this.players.toCharArray()) {
+                models.put(player, new Model(player));
+            }
+        }
 
         this.round = round;
         if (this.failures.size() != failures) this.failures.add(round - 1);
@@ -59,7 +63,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
 
         if (spies.indexOf('?') == -1) {
             this.spies = spies;
-            this.spy = spies.indexOf(name) != -1;
+            this.spy = spies.contains(name);
         } else {
             this.spies = "";
         }
@@ -106,13 +110,12 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * Get the number of mentioned names in the group
      *
      * @param names the player group to check
-     * @return
+     * @return the number of names that were contained in the group
      */
     private int numberContained(String group, String names) {
         int contained = 0;
-        char[] checked = group.toCharArray();
-        for (int i = 0; i < checked.length; i++) {
-            if (names.indexOf(checked[i]) != -1) {
+        for (char check : group.toCharArray()) {
+            if (names.indexOf(check) != -1) {
                 contained++;
             }
         }
@@ -151,7 +154,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (leader.equals(name)) {
                 return true; // RULE: approve mission if I am leader
             }
-            if (team.length() == 3 && team.indexOf(name) == -1) {
+            if (team.length() == 3 && team.contains(name)) {
                 return false; // RULE: don't approve if team of 3 and agent not on team
             }
             if (spiesOnMission > 0) {
@@ -186,7 +189,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      **/
     public boolean do_Betray() {
         if (!spy) {
-            return false; // should only be called if is spy... but just incase
+            return false; // should only be called if is spy... but just in case
         }
         if (round + failures.size() >= 5) {
             return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
@@ -201,7 +204,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         if (spiesOnMission == 1 && team.indexOf(name) != 0) {
             return touchOfRandom(true);
         }
-        return (spy ? random.nextInt(2) != 0 : false);
+        return random.nextInt(2) != 0;
     }
 
     /**
@@ -252,8 +255,8 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @param expected the value to slightly randomise
      * @return a slightly randomised value
      */
-    public boolean touchOfRandom(boolean expected) {
-        return random.nextInt(10) == 1 ? !expected : expected;
+    private boolean touchOfRandom(boolean expected) {
+        return random.nextInt(5) == 0 ? !expected : expected;
     }
 
     /**
@@ -261,7 +264,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      *
      * @param msg the message to log
      */
-    public void debug(String msg) {
+    private void debug(String msg) {
         if (DEBUG) {
             System.out.println("~~~DEBUG: " + msg);
         }
