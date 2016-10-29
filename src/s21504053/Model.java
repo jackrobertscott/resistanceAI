@@ -1,115 +1,62 @@
 package s21504053;
 
-import cits3001_2016s2.*;
-
 import java.util.*;
 
 public class Model {
-    private char name;
+    private boolean success; // on successful team
+    private boolean spy; // was a spy
+    private HashMap<Move, Integer[]> moves;
 
-    private int selectsSuccessfulTeam;
-    private int votesForSuccessfulTeam;
-    private int votesForUnsuccessfulTeam;
-    private int votesForTeamWithTwoSabotages;
-    private int teamOnIsUnsuccessful;
-    private int selectsTeamFeaturingSelf;
-    private int votesForTeamFeaturingSelf;
-    private int votesForTeamNotFeaturingSelf;
-    private int votesForTeam3NotFeaturingSelf;
-    private int votesAgainstTeamOnFifthAttempt;
-
-    public Model(char name) {
-        this.name = name;
-
-        selectsSuccessfulTeam = 0;
-        votesForSuccessfulTeam = 0;
-        votesForUnsuccessfulTeam = 0;
-        votesForTeamWithTwoSabotages = 0;
-        teamOnIsUnsuccessful = 0;
-        selectsTeamFeaturingSelf = 0;
-        votesForTeamFeaturingSelf = 0;
-        votesForTeamNotFeaturingSelf = 0;
-        votesForTeam3NotFeaturingSelf = 0;
-        votesAgainstTeamOnFifthAttempt = 0;
+    public Model() {
+        moves = new HashMap<Move, Integer[]>();
+        Integer[] empty = new Integer[2];
+        Arrays.fill(empty, 0);
+        moves.put(Move.SELECTED_TEAM_SUCCESSFUL, empty.clone());
+        moves.put(Move.SELECTED_TEAM_UNSUCCESSFUL, empty.clone());
+        moves.put(Move.ON_TEAM_SUCCESSFUL, empty.clone());
+        moves.put(Move.ON_TEAM_UNSUCCESSFUL, empty.clone());
+        moves.put(Move.VOTED_TEAM_SUCCESSFUL, empty.clone());
+        moves.put(Move.VOTED_TEAM_UNSUCCESSFUL, empty.clone());
     }
 
-    public int get_selectsSuccessfulTeam() {
-        return selectsSuccessfulTeam;
+    /**
+     * Record a move made and if it was true
+     *
+     * @param move the action taken
+     * @param truthy if the action was spyish or not
+     */
+    public void act(Move move, boolean truthy) {
+        moves.get(move)[0]++;
+        if (truthy) {
+            moves.get(move)[1]++;
+        }
     }
 
-    public int increment_selectsSuccessfulTeam() {
-        return ++selectsSuccessfulTeam;
+    /**
+     * Record if model was on the winning team or not
+     *
+     * @param success the result of game for given agent (win or lose)
+     */
+    public void end(boolean success, boolean spy) {
+        this.success = success;
+        this.spy = spy;
     }
 
-    public int get_votesForSuccessfulTeam() {
-        return votesForSuccessfulTeam;
-    }
-
-    public int increment_votesForSuccessfulTeam() {
-        return ++votesForSuccessfulTeam;
-    }
-
-    public int get_votesForUnsuccessfulTeam() {
-        return votesForUnsuccessfulTeam;
-    }
-
-    public int increment_votesForUnsuccessfulTeam() {
-        return ++votesForUnsuccessfulTeam;
-    }
-
-    public int get_votesForTeamWithTwoSabotages() {
-        return votesForTeamWithTwoSabotages;
-    }
-
-    public int increment_votesForTeamWithTwoSabotages() {
-        return ++votesForTeamWithTwoSabotages;
-    }
-
-    public int get_teamOnIsUnsuccessful() {
-        return teamOnIsUnsuccessful;
-    }
-
-    public int increment_teamOnIsUnsuccessful() {
-        return ++teamOnIsUnsuccessful;
-    }
-
-    public int get_selectsTeamFeaturingSelf() {
-        return selectsTeamFeaturingSelf;
-    }
-
-    public int increment_selectsTeamFeaturingSelf() {
-        return ++selectsTeamFeaturingSelf;
-    }
-
-    public int get_votesForTeamFeaturingSelf() {
-        return votesForTeamFeaturingSelf;
-    }
-
-    public int increment_votesForTeamFeaturingSelf() {
-        return ++votesForTeamFeaturingSelf;
-    }
-
-    public int get_votesForTeamNotFeaturingSelf() {
-        return votesForTeamNotFeaturingSelf;
-    }
-
-    public int increment_votesForTeamNotFeaturingSelf() {
-        return ++votesForTeamNotFeaturingSelf;
-    }
-
-    public int get_votesForTeam3NotFeaturingSelf() {
-        return votesForTeam3NotFeaturingSelf;
-    }
-
-    public int increment_votesForTeam3NotFeaturingSelf() {
-        return ++votesForTeam3NotFeaturingSelf;
-    }
-
-    public int get_votesAgainstTeamOnFifthAttempt() {
-        return votesAgainstTeamOnFifthAttempt;
-    }
-
-    public int increment_votesAgainstTeamOnFifthAttempt() {
-        return ++votesAgainstTeamOnFifthAttempt;
+    /**
+     * Return the model in string form
+     *
+     * @return string representation of the model
+     */
+    public String toString() {
+        String out = "";
+        out += "SELECTED_TEAM_SUCCESSFUL: " + Arrays.toString(moves.get(Move.SELECTED_TEAM_SUCCESSFUL)) + "\n";
+        out += "SELECTED_TEAM_UNSUCCESSFUL: " + Arrays.toString(moves.get(Move.SELECTED_TEAM_UNSUCCESSFUL)) + "\n";
+        out += "ON_TEAM_SUCCESSFUL: " + Arrays.toString(moves.get(Move.ON_TEAM_SUCCESSFUL)) + "\n";
+        out += "ON_TEAM_UNSUCCESSFUL: " + Arrays.toString(moves.get(Move.ON_TEAM_UNSUCCESSFUL)) + "\n";
+        out += "VOTED_TEAM_SUCCESSFUL: " + Arrays.toString(moves.get(Move.VOTED_TEAM_SUCCESSFUL)) + "\n";
+        out += "VOTED_TEAM_UNSUCCESSFUL: " + Arrays.toString(moves.get(Move.VOTED_TEAM_UNSUCCESSFUL)) + "\n";
+        out += "TEAM_SUCCESSFUL: " + success + "\n";
+        out += "IS_SPY: " + spy;
+        return out;
     }
 }

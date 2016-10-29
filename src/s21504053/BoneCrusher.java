@@ -1,7 +1,5 @@
 package s21504053;
 
-import cits3001_2016s2.*;
-
 import java.util.*;
 
 /**
@@ -15,12 +13,11 @@ import java.util.*;
  * @author Jack Scott
  **/
 public class BoneCrusher implements cits3001_2016s2.Agent {
-
-    final static boolean DEBUG = true;
+    private final static boolean DEBUG = true;
 
     private String name; // agent name
     private String players; // all players in the game
-    private HashMap<Character, Model> models;
+    private Model model;
     private Random random;
 
     private int round; // mission number
@@ -28,12 +25,13 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private String leader; // mission leader proposed
     private HashSet<Integer> failures; // set of failed missions
     private int votes; // number of votes for executed round
+    private boolean agreed; // agreed to last vote
 
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
 
     public BoneCrusher() {
-        models = new HashMap<Character, Model>();
+        model = new Model();
         random = new Random();
         failures = new HashSet<Integer>();
         votes = 0;
@@ -51,21 +49,33 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
-        if (models.size() == 0) {
-            for (char player: this.players.toCharArray()) {
-                models.put(player, new Model(player));
-            }
-        }
 
         this.round = round;
-        if (this.failures.size() != failures) this.failures.add(round - 1);
-        debug("Missions failed: " + this.failures.toString());
+        if (this.failures.size() != failures) { // mission failed
+            this.failures.add(round - 1);
+            if (round > 1) {
+                model.act(Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
+                model.act(Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));
+                model.act(Move.VOTED_TEAM_UNSUCCESSFUL, agreed);
+            }
+        } else { // mission succeeded
+            if (round > 1) {
+                model.act(Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(name));
+                model.act(Move.ON_TEAM_SUCCESSFUL, team.contains(name));
+                model.act(Move.VOTED_TEAM_SUCCESSFUL, agreed);
+            }
+        }
 
         if (spies.indexOf('?') == -1) {
             this.spies = spies;
             this.spy = spies.contains(name);
         } else {
             this.spies = "";
+        }
+
+        if (round == 6) { // end of game
+            model.end(this.failures.size() > 2 ? spy : !spy, spy);
+            debug(model.toString());
         }
     }
 
@@ -130,38 +140,40 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public boolean do_Vote() {
         votes++;
         if (round == 1) {
-            return true; // RULE: approve any mission on the first round
+            agreed = true; // RULE: approve any mission on the first round
+        } else {
+            int spiesOnMission = numberContained(team, spies);
+            if (spy) { // is government spy
+                if (spiesOnMission == 0) {
+                    agreed = false; // RULE: reject if no spies are on mission
+                }
+                if (failures.size() == 2) {
+                    agreed = true; // RULE: approve mission if a spy is on it and nearly won
+                }
+                if (team.length() == spiesOnMission) {
+                    agreed = false; // RULE: don't approve a mission with only spies
+                }
+                if (spies.length() == spiesOnMission) {
+                    agreed = false; // RULES: reject mission with zero or both spies on mission
+                }
+                return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
+            } else { // is resistance
+                if (votes == 5) {
+                    agreed = true; // RULE: approve 5th mission else government wins
+                }
+                if (leader.equals(name)) {
+                    agreed = true; // RULE: approve mission if I am leader
+                }
+                if (team.length() == 3 && team.contains(name)) {
+                    agreed = false; // RULE: don't approve if team of 3 and agent not on team
+                }
+                if (spiesOnMission > 0) {
+                    agreed = false; // RULE: don't approve if spy is on mission team
+                }
+                agreed = touchOfRandom(true); // RULE: approve all other missions
+            }
         }
-        int spiesOnMission = numberContained(team, spies);
-        if (spy) { // is government spy
-            if (spiesOnMission == 0) {
-                return false; // RULE: reject if no spies are on mission
-            }
-            if (failures.size() == 2) {
-                return true; // RULE: approve mission if a spy is on it and nearly won
-            }
-            if (team.length() == spiesOnMission) {
-                return false; // RULE: don't approve a mission with only spies
-            }
-            if (spies.length() == spiesOnMission) {
-                return false; // RULES: reject mission with zero or both spies on mission
-            }
-            return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
-        } else { // is resistance
-            if (votes == 5) {
-                return true; // RULE: approve 5th mission else government wins
-            }
-            if (leader.equals(name)) {
-                return true; // RULE: approve mission if I am leader
-            }
-            if (team.length() == 3 && team.contains(name)) {
-                return false; // RULE: don't approve if team of 3 and agent not on team
-            }
-            if (spiesOnMission > 0) {
-                return false; // RULE: don't approve if spy is on mission team
-            }
-            return touchOfRandom(true); // RULE: approve all other missions
-        }
+        return agreed;
     }
 
     /**
