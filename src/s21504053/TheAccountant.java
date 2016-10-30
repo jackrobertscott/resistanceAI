@@ -61,7 +61,7 @@ public class TheAccountant implements cits3001_2016s2.Agent {
             failed = true;
         }
 
-        if (round != 0) {
+        if (round != 1) {
             if (failed) {
                 gk.feed(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
                 gk.feed(shrub, Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));

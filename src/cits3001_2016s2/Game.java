@@ -328,15 +328,18 @@ public class Game{
 
     for (int i = 0; i < 10000; i++) {
       g = new Game();
-      g.stopwatchOn();g.addPlayer(new s21504053.BoneCrusher());g.stopwatchOff(1000,'A');
-      g.stopwatchOn();g.addPlayer(new s21130321.Ernie21130321());g.stopwatchOff(1000,'B');
-      g.stopwatchOn();g.addPlayer(new s21504053.TheAccountant(gk));g.stopwatchOff(1000,'C');
-      g.stopwatchOn();g.addPlayer(new s21504053.LogicMan());g.stopwatchOff(1000,'D');
-      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'A');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
+      g.stopwatchOn();g.addPlayer(new s21504053.BoneCrusher());g.stopwatchOff(1000,'C');
+      g.stopwatchOn();g.addPlayer(new s21504053.BoneCrusher());g.stopwatchOff(1000,'D');
+      g.stopwatchOn();g.addPlayer(new s21504053.BoneCrusher());g.stopwatchOff(1000,'E');
+      g.stopwatchOn();g.addPlayer(new s21504053.TheAccountant(gk));g.stopwatchOff(1000,'F');
       g.setup();
       g.play();
+      if (i % 1000 == 0) gk.brewPotion();
     }
 
+    gk.printIngredients();
     gk.printLongTermSpy();
     gk.printLongTermNonSpy();
   }

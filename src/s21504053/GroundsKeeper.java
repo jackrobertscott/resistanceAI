@@ -1,21 +1,36 @@
 package s21504053;
 
+import java.io.*;
 import java.util.*;
 
 public class GroundsKeeper {
-    private final static double weightA = (0.17636363636363636 - 0.22931541369172617);
-    private final static double weightB = (0.15196733481811434 - 0.19466975666280417);
-    private final static double weightC = (0.05421487603305785 - 0.5403191936161277);
-    private final static double weightD = (0.8007423904974016 - 0.6616454229432214);
-    private final static double weightE = (0.7766942148760331 - 0.9615707685846283);
-    private final static double weightF = (0.7937639198218263 - 0.7439165701042874);
-
     private HashMap<Move, Integer[]> longTermSpy;
     private HashMap<Move, Integer[]> longTermNonSpy;
+    private HashMap<Move, Double> potion;
 
     public GroundsKeeper() {
         longTermSpy = createMoves();
         longTermNonSpy = createMoves();
+        potion = new HashMap<Move, Double>();
+        brewPotion();
+    }
+
+    public GroundsKeeper(String file) {
+        longTermSpy = createMoves();
+        longTermNonSpy = createMoves();
+        potion = new HashMap<Move, Double>();
+
+        try {
+            DataInputStream dis = new DataInputStream(new FileInputStream(file));
+            for (Move move : Move.values()) {
+                double d = Double.parseDouble(dis.readUTF());
+                potion.put(move, d);
+//                System.out.println("~~~~~~~~~~~~~OUT: " + d);
+            }
+            dis.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -30,7 +45,7 @@ public class GroundsKeeper {
     /**
      * Record a move made and if it was true
      *
-     * @param move the action taken
+     * @param move   the action taken
      * @param truthy if the action was spyish or not
      */
     public void feed(HashMap<Move, Integer[]> shrub, Move move, boolean truthy) {
@@ -69,13 +84,47 @@ public class GroundsKeeper {
      */
     public double tame(HashMap<Move, Integer[]> shrub) {
         double spyishness = 0.0;
-        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_SUCCESSFUL) * weightA;
-        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL) * weightB;
-        spyishness += calculatePercentage(shrub, Move.ON_TEAM_SUCCESSFUL) * weightC;
-        spyishness += calculatePercentage(shrub, Move.ON_TEAM_UNSUCCESSFUL) * weightD;
-        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_SUCCESSFUL) * weightE;
-        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_UNSUCCESSFUL) * weightF;
+        for (Move move : Move.values()) {
+            spyishness += calculatePercentage(shrub, move) * potion.get(move);
+        }
         return spyishness;
+    }
+
+    /**
+     * Brew a glorious potion with many tasty ingredients including rotten eggs, giant's feet and ear wax.
+     * Warning: may contain nuts.
+     */
+    public void brewPotion() {
+        for (Move move : Move.values()) {
+            potion.put(move, calculatePercentage(longTermSpy, move) - calculatePercentage(longTermNonSpy, move));
+        }
+
+        try {
+            DataOutputStream dos = new DataOutputStream(new FileOutputStream("memory.txt"));
+            for (Move move : Move.values()) {
+                String s = String.valueOf(potion.get(move));
+//                System.out.println("~~~~~~~~~~~~~OUT: " + s);
+                dos.writeUTF(s);
+            }
+            dos.flush();
+            dos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        longTermSpy = createMoves();
+        longTermNonSpy = createMoves();
+    }
+
+    /**
+     * Show the ingredients of the brew
+     */
+    public void printIngredients() {
+        String msg = "~~~POTION BREWED~~~\n";
+        for (Move move : potion.keySet()) {
+            msg += move.name() + ": " + potion.get(move) + "\n";
+        }
+        System.out.print(msg);
     }
 
     /**
@@ -85,12 +134,9 @@ public class GroundsKeeper {
         HashMap<Move, Integer[]> moves = new HashMap<Move, Integer[]>();
         Integer[] empty = new Integer[2];
         Arrays.fill(empty, 0);
-        moves.put(Move.SELECTED_TEAM_SUCCESSFUL, empty.clone());
-        moves.put(Move.SELECTED_TEAM_UNSUCCESSFUL, empty.clone());
-        moves.put(Move.ON_TEAM_SUCCESSFUL, empty.clone());
-        moves.put(Move.ON_TEAM_UNSUCCESSFUL, empty.clone());
-        moves.put(Move.VOTED_TEAM_SUCCESSFUL, empty.clone());
-        moves.put(Move.VOTED_TEAM_UNSUCCESSFUL, empty.clone());
+        for (Move move : Move.values()) {
+            moves.put(move, empty.clone());
+        }
         return moves;
     }
 
@@ -100,13 +146,10 @@ public class GroundsKeeper {
      * @return string representation of the model
      */
     public String movesToString(HashMap<Move, Integer[]> moves) {
-        String out = "-------------------------------\n";
-        out += "SELECTED_TEAM_SUCCESSFUL: " + calculatePercentage(moves, Move.SELECTED_TEAM_SUCCESSFUL) + "\n";
-        out += "SELECTED_TEAM_UNSUCCESSFUL: " + calculatePercentage(moves, Move.SELECTED_TEAM_UNSUCCESSFUL) + "\n";
-        out += "ON_TEAM_SUCCESSFUL: " + calculatePercentage(moves, Move.ON_TEAM_SUCCESSFUL) + "\n";
-        out += "ON_TEAM_UNSUCCESSFUL: " + calculatePercentage(moves, Move.ON_TEAM_UNSUCCESSFUL) + "\n";
-        out += "VOTED_TEAM_SUCCESSFUL: " + calculatePercentage(moves, Move.VOTED_TEAM_SUCCESSFUL) + "\n";
-        out += "VOTED_TEAM_UNSUCCESSFUL: " + calculatePercentage(moves, Move.VOTED_TEAM_UNSUCCESSFUL);
+        String out = "\n";
+        for (Move move : Move.values()) {
+            out += move.name() + ": " + calculatePercentage(moves, move) + "\n";
+        }
         return out;
     }
 
@@ -121,7 +164,7 @@ public class GroundsKeeper {
      */
     public void printLongTermSpy() {
         String msg = movesToString(longTermSpy);
-        msg += "\nIS_SPY: true";
+        msg += "IS_SPY: true\n";
         System.out.println(msg);
     }
 
@@ -130,7 +173,7 @@ public class GroundsKeeper {
      */
     public void printLongTermNonSpy() {
         String msg = movesToString(longTermNonSpy);
-        msg += "\nIS_SPY: false";
+        msg += "IS_SPY: false\n";
         System.out.println(msg);
     }
 }

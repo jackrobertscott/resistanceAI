@@ -32,7 +32,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private String spies; // all known spies
 
     public BoneCrusher() {
-        gk = new GroundsKeeper();
+        gk = new GroundsKeeper("memory.txt");
         stats = new HashMap<Character, HashMap<Move, Integer[]>>();
         random = new Random();
         failures = new HashSet<Integer>();
