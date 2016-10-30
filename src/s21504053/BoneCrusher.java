@@ -53,6 +53,10 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
+        this.spies = spies;
+        if (spies.indexOf('?') == -1) {
+            this.spy = spies.contains(name);
+        }
 
         if (stats.size() == 0) {
             for (char player : players.toCharArray()) {
@@ -81,23 +85,12 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             }
         }
 
-        if (round > 1) {
-            guessSpies();
-        }
-
-        if (spies.indexOf('?') == -1) {
-            this.spies = spies;
-            this.spy = spies.contains(name);
-        } else {
-            this.spies = "";
-        }
-
         if (round == 6) { // end of game
-            for (char player : players.toCharArray()) {
-                if (round > 1) {
-                    debug(gk.movesToString(stats.get(player)));
-                }
-            }
+//            for (char player : players.toCharArray()) {
+//                if (round > 1) {
+//                    debug(gk.movesToString(stats.get(player)));
+//                }
+//            }
         }
     }
 
@@ -116,7 +109,6 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         for (int i = 0; i < numPlayers; i++) {
             char player = players.charAt(i);
             double spyishness = gk.tame(stats.get(player));
-            debug(spyishness+"");
             for (int j = 0; j < numPlayers; j++) {
                 if (data[j] < spyishness) {
                     for (int a = numPlayers - 1; a > j; a--) {
@@ -148,14 +140,20 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public String do_Nominate(int number) {
         HashSet<Character> nominees = new HashSet<Character>();
         nominees.add(name.charAt(0)); // RULE: add self to the nominees
+        String guesses = spy ? spies : guessSpies();
 
         for (int i = 0; i < number; i++) {
             char c = players.charAt(random.nextInt(players.length()));
-            while (nominees.contains(c) || spies.indexOf(c) != -1) {
+            int x = 0;
+            while (nominees.contains(c) || guesses.indexOf(c) != -1) {
                 c = players.charAt(random.nextInt(players.length()));
+                if (x > 100) guesses = spies; // prevents from getting in infinite loop
+                x++;
             }
             nominees.add(c); // RULE: do not add any (other) spies
         }
+
+        debug("GUESSES: "+guesses);
 
         String nominated = "";
         for (Character c : nominees) nominated += c;
@@ -200,7 +198,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         if (round == 1) {
             return true; // RULE: approve any mission on the first round
         }
-        int spiesOnMission = numberContained(team, spies);
+        int spiesOnMission = numberContained(team, spy ? spies : guessSpies());
         if (spy) { // is government spy
             if (failures.size() == 2) {
                 if (round + failures.size() >= 5) {
@@ -297,16 +295,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return a string containing the name of each accused agent.
      */
     public String do_Accuse() {
-        int number = random.nextInt(players.length());
-        HashSet<Character> team = new HashSet<Character>();
-        for (int i = 0; i < number; i++) {
-            char c = players.charAt(random.nextInt(players.length()));
-            while (team.contains(c)) c = players.charAt(random.nextInt(players.length()));
-            team.add(c);
-        }
-        String tm = "";
-        for (Character c : team) tm += c;
-        return tm;
+        return guessSpies();
     }
 
     /**
