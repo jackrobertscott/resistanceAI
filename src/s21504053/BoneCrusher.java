@@ -32,7 +32,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private String spies; // all known spies
 
     public BoneCrusher() {
-        gk = new GroundsKeeper("memory.txt");
+        gk = new GroundsKeeper();
         stats = new HashMap<Character, HashMap<Move, Integer[]>>();
         random = new Random();
         failures = new HashSet<Integer>();
@@ -87,14 +87,15 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         if (spies.indexOf('?') == -1) return spies; // when spies are already known
 
         int numPlayers = players.length();
-        char peeps[] = new char[numPlayers];
-        double data[] = new double[numPlayers];
+        char peeps[] = new char[numPlayers]; // don't include self
+        double data[] = new double[numPlayers]; // don't include self
         Arrays.fill(peeps, '0');
         Arrays.fill(data, Double.NEGATIVE_INFINITY);
 
         for (int i = 0; i < numPlayers; i++) {
             char player = players.charAt(i);
             double spyishness = gk.tame(stats.get(player));
+            if (name.equals(player+"")) spyishness = Double.NEGATIVE_INFINITY;
             for (int j = 0; j < numPlayers; j++) {
                 if (data[j] < spyishness) {
                     for (int a = numPlayers - 1; a > j; a--) {
@@ -130,10 +131,8 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
 
         for (int i = 0; i < number; i++) {
             char c = players.charAt(random.nextInt(players.length()));
-            int x = 0;
-            while (nominees.contains(c) || guesses.indexOf(c) != -1) {
+            while ((nominees.contains(c) || guesses.contains(c+"")) && nominees.size() < number) {
                 c = players.charAt(random.nextInt(players.length()));
-                if (++x > 100) guesses = spies; // prevents from getting in infinite loop
             }
             nominees.add(c); // RULE: do not add any (other) spies
         }
@@ -311,7 +310,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return a slightly randomised value
      */
     private boolean touchOfRandom(boolean expected) {
-        return random.nextInt(10) == 0 ? !expected : expected;
+        return expected;// random.nextInt(10) == 0 ? !expected : expected;
     }
 
     /**

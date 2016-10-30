@@ -12,7 +12,13 @@ public class GroundsKeeper {
         longTermSpy = createMoves();
         longTermNonSpy = createMoves();
         potion = new HashMap<Move, Double>();
-        brewPotion();
+        potion.put(Move.ON_TEAM_SUCCESSFUL, -0.21602841261031208);
+        potion.put(Move.VOTED_TEAM_UNSUCCESSFUL, -0.01624830422512291);
+        potion.put(Move.VOTED_TEAM_SUCCESSFUL, 0.011160445981332368);
+        potion.put(Move.SELECTED_TEAM_SUCCESSFUL, -0.0020137262762822405);
+        potion.put(Move.SELECTED_TEAM_UNSUCCESSFUL, 0.003684308429803246);
+        potion.put(Move.ON_TEAM_UNSUCCESSFUL, 0.20429202266224666);
+        // brewPotion();
     }
 
     public GroundsKeeper(String file) {
@@ -25,7 +31,6 @@ public class GroundsKeeper {
             for (Move move : Move.values()) {
                 double d = Double.parseDouble(dis.readUTF());
                 potion.put(move, d);
-//                System.out.println("~~~~~~~~~~~~~OUT: " + d);
             }
             dis.close();
         } catch (IOException e) {
@@ -85,7 +90,7 @@ public class GroundsKeeper {
     public double tame(HashMap<Move, Integer[]> shrub) {
         double spyishness = 0.0;
         for (Move move : Move.values()) {
-            spyishness += calculatePercentage(shrub, move) * potion.get(move);
+            spyishness += calculatePercentage(shrub, move) * Math.pow(potion.get(move), 5);
         }
         return spyishness;
     }
@@ -103,7 +108,6 @@ public class GroundsKeeper {
             DataOutputStream dos = new DataOutputStream(new FileOutputStream("memory.txt"));
             for (Move move : Move.values()) {
                 String s = String.valueOf(potion.get(move));
-//                System.out.println("~~~~~~~~~~~~~OUT: " + s);
                 dos.writeUTF(s);
             }
             dos.flush();
