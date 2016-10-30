@@ -15,14 +15,14 @@ public class Run{
       Competitor[] contenders = {
         new Competitor(new cits3001_2016s2.RandomAgent(),"Randy","Tim"),
         new Competitor(new s21504053.BoneCrusher(),"BoneCrusher","Jack"),
-        new Competitor(new s21130321.Ernie21130321(),"ErnieAI","Tahmer")
+        //new Competitor(new s21130321.Ernie21130321(),"ErnieAI","Tahmer"),
+        new Competitor(new s21130321.Ernie21130321BEST(),"ErnieBEST","Erndog")
+
       };
-      fw.write(Game.tournament(contenders, 5000));
+      fw.write(Game.tournament(contenders, 10000));
       fw.close();
     }
     catch(IOException e){System.out.println("IO fail");}
   }
 
-}  
-
-
+}

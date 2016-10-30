@@ -68,7 +68,7 @@ public class Game{
       }catch(IOException e){e.printStackTrace();}
     }
     System.out.println(msg);
-  }  
+  }
 
 
   /**
@@ -115,7 +115,7 @@ public class Game{
     }
   }
 
-  /** 
+  /**
    * Starts a timer for Agent method calls
    * */
   private void stopwatchOn(){
@@ -144,7 +144,7 @@ public class Game{
       if(spies.contains(c)){
         stopwatchOn(); players.get(c).get_status(""+c,playerString,spyString,round,fails); stopwatchOff(100,c);
       }
-      else{ 
+      else{
         stopwatchOn(); players.get(c).get_status(""+c,playerString,resString,round,fails); stopwatchOff(100,c);
       }
     }
@@ -186,7 +186,7 @@ public class Game{
    int votes = 0;
    String yays = "";
    for(Character c: players.keySet()){
-      stopwatchOn(); 
+      stopwatchOn();
       if(players.get(c).do_Vote()){
         votes++;
         yays+=c;
@@ -199,12 +199,12 @@ public class Game{
       stopwatchOff(100,c);
     }
     log(votes+" votes for: "+yays);
-    return (votes>numPlayers/2);  
+    return (votes>numPlayers/2);
   }
 
   /**
    * Polls the mission team on whether they betray or not, and reports the result.
-   * First it informs all players of the team being sent on the mission. 
+   * First it informs all players of the team being sent on the mission.
    * Then polls each agent who goes on the mission on whether or not they betray the mission.
    * It reports to each agent the number of betrayals.
    * @param team A string with one character for each member of the team.
@@ -228,7 +228,7 @@ public class Game{
       stopwatchOff(100,c);
     }
     log(traitors +(traitors==1?" spy ":" spies ")+ "betrayed the mission");
-    return traitors;  
+    return traitors;
   }
 
   /**
@@ -266,7 +266,7 @@ public class Game{
           players.get(a).get_Accusation(c+"", accusations.get(c));
           stopwatchOff(100,c);
         }
-      }  
+      }
     }
     if(fails>2) log("Government Wins! "+fails+" missions failed.");
     else log("Resistance Wins! "+fails+" missions failed.");
@@ -304,16 +304,16 @@ public class Game{
               else cc.resWin();
             }
           g.log(cc.toString());
-          }  
+          }
         }
-      }    
+      }
     }
     Arrays.sort(agents);
-    String ret = 
+    String ret =
     "<html><body><table><tr><th>Name</th><th>Author</th><th>Spy Wins</th><th>Spy Plays</th><th>Res Wins</th><th>Res Plays</th><th>Win Rate</th></tr>";
     for(int i = 0; i< agents.length; i++)
       ret+= agents[i];
-    return ret+"</table></body></html>";  
+    return ret+"</table></body></html>";
   }
 
 
@@ -321,34 +321,17 @@ public class Game{
    * Sets up game with random agents and plays
    **/
   public static void main(String[] args){
-    /* Run a single game
+
     Game g = new Game();
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'A');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
-    g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
-    g.setup();
-    g.play();
-    */
-    /*Run a tournament*/
-  }    
-  
-
-}  
+    char[] things = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
+    int x = Integer.parseInt(args[0]);
+   for(int i = 0; i < x; i++)
+    {
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,things[i]);
+   }
+  g.setup();
+  g.play();
+  }
 
 
-
-
-
-        
-        
-
-
-
-
-
-
-
-
-
+}

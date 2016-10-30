@@ -8,6 +8,7 @@
 package s21130321;
 
 import java.util.*;
+import java.io.*;
 
 import cits3001_2016s2.*;
 
@@ -42,6 +43,8 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
   private int votingRound;
   private int numTraitors;
 
+  double [] xs;
+
   Map spyish;
   Map ff;
 
@@ -50,6 +53,13 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
     votednay = "";
     failedLast = false;
     votingRound = 0;
+
+    xs = new Double[15]
+    xs = {0.886376, 0.4455828, 0.9970207, 0.3436828, 0.8449278,
+    0.3919858, 0.8398001, 0.2361175, 0.9078746, 0.2775158,
+    0.3608134, 0.2737935, 0.08736814, 0.7127835, 0.4166021}
+
+
     setupff();
   }
 
@@ -108,12 +118,14 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
       return team;
     }
     else{
-      //TODO: get lowest probability of being a spy. and add to team with always include me.
+      //get lowest probability of being a spy. and add to team with always include me.
       String team = name;
-      while(team.length() != number)
+      List sl = entriesSortedByValues(spyish);
+      //System.out.println("sorted list = " + sl);
+      for(int i = 0 ; i < number - 1; i++)
       {
-        int j = r.nextInt(players.length());
-        if(team.indexOf(players.charAt(j))==-1) team += players.charAt(j);
+        char e = (char)((Map.Entry)sl.get(i)).getKey();
+        team += e;
       }
       return team;
     }
@@ -140,40 +152,39 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
    * @return true, if the agent votes for the mission, false, if they vote against it.
    * */
   public boolean do_Vote(){
-    boolean rety = true;
+
     //(Voting) Approve missions on the fifth voting attempt.
     //(Voting) Approve any voting attempt in the first mission.
     //(Voting) Approve missions where self is the leader.
-    if(votingRound == 5) rety = true;
-    if(nextMish == 1) rety = true;
-    if(leader == name.charAt(0)) rety = true;
+    if(votingRound == 5) return true;
+    if(nextMish == 1) return true;
+    if(leader == name.charAt(0)) return true;
 
     if(!spy){
       //(Voting) Reject teams of three not featuring self.
-      if(players.length() == 5 || (mishTeam.indexOf(name) == -1)) rety = false;
+      if(players.length() == 5 || (mishTeam.indexOf(name) == -1)) return false;
 
       //(Voting) Reject missions with known spies on the team.
-      //TODO: if beyesian probability is high to fail the mission false limit determined by trial and error
-      rety = true;
+      // if probability is high to fail the mission false limit determined by trial and error
+      double teamrisk = 0.0;
+      for(int i = 0 ; i < mishTeam.length() - 1; i++)
+      {
+        double e = (double)spyish.get(mishTeam.charAt(i));
+        teamrisk += e;
+      }
+      if(teamrisk / (double)mishTeam.length() >= xs[14]) return false;
+      return true;
     }
     else{
       int sOM = numSpiesOnMish();
       //(Voting) (Spy) Approve missions with at least one spy if spies only need one mission to win.
-      if(fails == 2 || (sOM > 0)) rety = true;
+      if(fails == 2 || (sOM > 0)) return true;
       //(Voting) (Spy) Reject missions where the entire team is spies.
-      if(sOM != 1) rety = false;
+      if(sOM != 1) return false;
 
-      rety = true;
+      return true;
     }
 
-    if(rety){
-      //selectsTeamILike
-      updatespyish(leader, ff.get("selectsTeamILike"));
-    } else {
-      //selectsTeamIHate
-      updatespyish(leader, ff.get("selectsTeamIHate"));
-    }
-    return rety;
   }
 
   /**
@@ -279,12 +290,11 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
     double val = (double)spyish.get(p);
     double fff = (double)fa;
     val = val + fff;
-    if(val > 1) val = 1;
-    if(val < 0) val = 0;
+    //if(val > 1) val = 1;
+    //if(val < 0) val = 0;
     spyish.put(p, val);
   }
   private void roundResult(){
-    //TODO:
     if(failedLast){
       //who selected it (leader)
       //selectsUnsuccessfulTeam
@@ -331,46 +341,46 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
       }
     }
   }
+  static <K,V extends Comparable<? super V>> List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
+
+      List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
+
+      Collections.sort(sortedEntries,
+              new Comparator<Map.Entry<K,V>>() {
+                  @Override
+                  public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
+                      return e1.getValue().compareTo(e2.getValue());
+                  }
+              }
+      );
+
+      return sortedEntries;
+  }
+
   private void setupff(){
     ff = new HashMap();
+    Random r = new Random();
 
-    double x1 = -0.3;
-    double x2 = 0.5;
-    double x3 = -0.2;
-    double x4 = 0.2;
-    double x5 = 0.2;
-    double x6 = -0.2;
-    double x7 = 0.6;
-    double x8 = -0.6;
-    //
-    double x9 = -0.05;
-    double x10 = 0.05;
-    double x11 = 0.2;
-    double x12 = 0.3;
-    double x13 = 0.4;
-    double x14 = 0.5;
-    double x15 = 0.5;
+    ff.put("selectsSuccessfulTeam", xs[2] * -1.0);
+    ff.put("selectsUnsuccessfulTeam", xs[2]);
 
+    ff.put("votesForSuccessfulTeam",xs[4] * -1.0);
+    ff.put("votesForUnsuccessfulTeam", xs[4]);
 
-    ff.put("selectsSuccessfulTeam", x1);
-    ff.put("selectsUnsuccessfulTeam", x2);
+    ff.put("votesAgainstSuccessfulTeam", xs[6] );
+    ff.put("votesAgainstUnsuccessfulTeam", xs[6] * -1.0);
 
-    ff.put("votesForSuccessfulTeam",x3 );
-    ff.put("votesForUnsuccessfulTeam", x4);
+    ff.put("teamOnIsUnsuccessful", xs[8] );
+    ff.put("teamOnIsSuccessful", xs[8] * -1.0);
 
-    ff.put("votesAgainstSuccessfulTeam", x5);
-    ff.put("votesAgainstUnsuccessfulTeam", x6);
+    ff.put("votesForTeamFeaturingSelf", xs[11] * -1.0);
+    ff.put("votesForTeamNotFeaturingSelf", xs[11]);
+    ff.put("votesAgainstTeamOnFifthAttempt", 1.0);
 
-    ff.put("teamOnIsUnsuccessful", x7);
-    ff.put("teamOnIsSuccessful", x8);
+    ff.put("selectsTeamFeaturingSelf", xs[13] * -1.0);
 
-    ff.put("votesForTeamFeaturingSelf", x10);
-    ff.put("votesForTeamNotFeaturingSelf", x11);
-    ff.put("votesAgainstTeamOnFifthAttempt", x12);
-
-    ff.put("selectsTeamFeaturingSelf", x13);
-
-    ff.put("selectsTeamIHate", x14);
-    ff.put("selectsTeamILike", x15);
+    //ff.put("selectsTeamIHate", x[14]);
+    //ff.put("selectsTeamILike", x[15]);
   }
+
 }
