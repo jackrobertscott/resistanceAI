@@ -51,29 +51,26 @@ public class TheAccountant implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
-
+        this.spies = spies;
+        this.spy = spies.contains(name);
         this.round = round;
+        boolean failed = false;
+
         if (this.failures.size() != failures) { // mission failed
             this.failures.add(round - 1);
+            failed = true;
+        }
 
-            if (round > 1) {
+        if (round != 0) {
+            if (failed) {
                 gk.feed(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
                 gk.feed(shrub, Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));
                 gk.feed(shrub, Move.VOTED_TEAM_UNSUCCESSFUL, yays.contains(name));
-            }
-        } else { // mission succeeded
-            if (round > 1) {
+            } else {
                 gk.feed(shrub, Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(name));
                 gk.feed(shrub, Move.ON_TEAM_SUCCESSFUL, team.contains(name));
                 gk.feed(shrub, Move.VOTED_TEAM_SUCCESSFUL, yays.contains(name));
             }
-        }
-
-        if (spies.indexOf('?') == -1) {
-            this.spies = spies;
-            this.spy = spies.contains(name);
-        } else {
-            this.spies = "";
         }
 
         if (round == 6) { // end of game
@@ -213,12 +210,12 @@ public class TheAccountant implements cits3001_2016s2.Agent {
         }
         int spiesOnMission = numberContained(team, spies);
         if (team.length() == spiesOnMission) {
-            return touchOfRandom(false); // RULE: don't betray if the whole team are spies
+            return false; // RULE: don't betray if the whole team are spies
         }
         if (spiesOnMission == 1 && team.indexOf(name) != 0) {
             return touchOfRandom(true);
         }
-        return random.nextInt(2) != 0;
+        return touchOfRandom(true);
     }
 
     /**
@@ -270,7 +267,7 @@ public class TheAccountant implements cits3001_2016s2.Agent {
      * @return a slightly randomised value
      */
     private boolean touchOfRandom(boolean expected) {
-        return random.nextInt(5) == 0 ? !expected : expected;
+        return random.nextInt(10) == 0 ? !expected : expected;
     }
 
     /**

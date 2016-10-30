@@ -326,19 +326,19 @@ public class Game{
     GroundsKeeper gk = new GroundsKeeper();
     Game g;
 
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10000; i++) {
       g = new Game();
       g.stopwatchOn();g.addPlayer(new s21504053.BoneCrusher());g.stopwatchOff(1000,'A');
-      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
-      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
-      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
+      g.stopwatchOn();g.addPlayer(new s21130321.Ernie21130321());g.stopwatchOff(1000,'B');
+      g.stopwatchOn();g.addPlayer(new s21504053.TheAccountant(gk));g.stopwatchOff(1000,'C');
+      g.stopwatchOn();g.addPlayer(new s21504053.LogicMan());g.stopwatchOff(1000,'D');
       g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'E');
       g.setup();
       g.play();
     }
 
-//    gk.printLongTermSpy();
-//    gk.printLongTermNonSpy();
+    gk.printLongTermSpy();
+    gk.printLongTermNonSpy();
   }
   
 

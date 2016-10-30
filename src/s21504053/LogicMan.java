@@ -47,17 +47,12 @@ public class LogicMan implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
-
+        this.spies = spies;
+        this.spy = spies.contains(name);
         this.round = round;
+
         if (this.failures.size() != failures) { // mission failed
             this.failures.add(round - 1);
-        }
-
-        if (spies.indexOf('?') == -1) {
-            this.spies = spies;
-            this.spy = spies.contains(name);
-        } else {
-            this.spies = "";
         }
     }
 
@@ -126,17 +121,18 @@ public class LogicMan implements cits3001_2016s2.Agent {
         }
         int spiesOnMission = numberContained(team, spies);
         if (spy) { // is government spy
-            if (spiesOnMission == 0) {
-                return false; // RULE: reject if no spies are on mission
-            }
             if (failures.size() == 2) {
-                return true; // RULE: approve mission if a spy is on it and nearly won
+                if (round + failures.size() >= 5) {
+                    return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
+                } else {
+                    return touchOfRandom(true); // RULE: approve mission if a spy is on it and nearly won
+                }
             }
             if (team.length() == spiesOnMission) {
-                return false; // RULE: don't approve a mission with only spies
+                return touchOfRandom(false); // RULE: don't approve a mission with only spies
             }
-            if (spies.length() == spiesOnMission) {
-                return false; // RULES: reject mission with zero or both spies on mission
+            if (spies.length() == spiesOnMission || spiesOnMission == 0) {
+                return touchOfRandom(false); // RULES: reject mission with zero or both spies on mission
             }
             return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
         } else { // is resistance
@@ -152,7 +148,7 @@ public class LogicMan implements cits3001_2016s2.Agent {
             if (spiesOnMission > 0) {
                 return false; // RULE: don't approve if spy is on mission team
             }
-            return touchOfRandom(true); // RULE: approve all other missions
+            return true; // RULE: approve all other missions
         }
     }
 
@@ -197,7 +193,7 @@ public class LogicMan implements cits3001_2016s2.Agent {
         if (spiesOnMission == 1 && team.indexOf(name) != 0) {
             return touchOfRandom(true);
         }
-        return random.nextInt(2) != 0;
+        return touchOfRandom(true);
     }
 
     /**
@@ -249,7 +245,7 @@ public class LogicMan implements cits3001_2016s2.Agent {
      * @return a slightly randomised value
      */
     private boolean touchOfRandom(boolean expected) {
-        return random.nextInt(5) == 0 ? !expected : expected;
+        return random.nextInt(10) == 0 ? !expected : expected;
     }
 
     /**

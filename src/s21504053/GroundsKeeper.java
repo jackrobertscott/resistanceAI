@@ -3,6 +3,13 @@ package s21504053;
 import java.util.*;
 
 public class GroundsKeeper {
+    private final static double weightA = (0.17636363636363636 - 0.22931541369172617);
+    private final static double weightB = (0.15196733481811434 - 0.19466975666280417);
+    private final static double weightC = (0.05421487603305785 - 0.5403191936161277);
+    private final static double weightD = (0.8007423904974016 - 0.6616454229432214);
+    private final static double weightE = (0.7766942148760331 - 0.9615707685846283);
+    private final static double weightF = (0.7937639198218263 - 0.7439165701042874);
+
     private HashMap<Move, Integer[]> longTermSpy;
     private HashMap<Move, Integer[]> longTermNonSpy;
 
@@ -62,12 +69,12 @@ public class GroundsKeeper {
      */
     public double tame(HashMap<Move, Integer[]> shrub) {
         double spyishness = 0.0;
-        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_SUCCESSFUL) * -1.0;
-        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL) * 1.0;
-        spyishness += calculatePercentage(shrub, Move.ON_TEAM_SUCCESSFUL) * -1.0;
-        spyishness += calculatePercentage(shrub, Move.ON_TEAM_UNSUCCESSFUL) * 1.0;
-        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_SUCCESSFUL) * -1.0;
-        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_UNSUCCESSFUL) * 1.0;
+        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_SUCCESSFUL) * weightA;
+        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL) * weightB;
+        spyishness += calculatePercentage(shrub, Move.ON_TEAM_SUCCESSFUL) * weightC;
+        spyishness += calculatePercentage(shrub, Move.ON_TEAM_UNSUCCESSFUL) * weightD;
+        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_SUCCESSFUL) * weightE;
+        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_UNSUCCESSFUL) * weightF;
         return spyishness;
     }
 
