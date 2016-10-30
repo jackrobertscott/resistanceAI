@@ -43,8 +43,7 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
   private int votingRound;
   private int numTraitors;
 
-  double [] xs;
-
+Double [] xs;
   Map spyish;
   Map ff;
 
@@ -53,13 +52,8 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
     votednay = "";
     failedLast = false;
     votingRound = 0;
-
-    xs = new Double[15]
-    xs = {0.886376, 0.4455828, 0.9970207, 0.3436828, 0.8449278,
-    0.3919858, 0.8398001, 0.2361175, 0.9078746, 0.2775158,
-    0.3608134, 0.2737935, 0.08736814, 0.7127835, 0.4166021}
-
-
+    Double [] xsp = {0.886376, 0.4455828, 0.9970207, 0.3436828, 0.8449278,0.3919858, 0.8398001, 0.2361175, 0.9078746, 0.2775158,0.3608134, 0.2737935, 0.08736814, 0.7127835, 0.4166021};
+    xs = xsp;
     setupff();
   }
 
