@@ -19,6 +19,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private String players; // all players in the game
     private GroundsKeeper gk;
     private HashMap<Move, Integer[]> shrub;
+    private HashMap<Character, HashMap<Move, Integer[]>> stats;
     private Random random;
 
     private int round; // mission number
@@ -34,6 +35,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public BoneCrusher(GroundsKeeper groundsKeeper) {
         gk = groundsKeeper;
         shrub = gk.plant();
+        stats = new HashMap<Character, HashMap<Move, Integer[]>>();
         random = new Random();
         failures = new HashSet<Integer>();
         votes = 0;
@@ -51,6 +53,12 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
+
+        if (stats.size() == 0) {
+            for (char player : players.toCharArray()) {
+                stats.put(player, gk.plant());
+            }
+        }
 
         this.round = round;
         if (this.failures.size() != failures) { // mission failed
@@ -146,17 +154,18 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         }
         int spiesOnMission = numberContained(team, spies);
         if (spy) { // is government spy
-            if (spiesOnMission == 0) {
-                return false; // RULE: reject if no spies are on mission
-            }
             if (failures.size() == 2) {
-                return true; // RULE: approve mission if a spy is on it and nearly won
+                if (round + failures.size() >= 5) {
+                    return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
+                } else {
+                    return touchOfRandom(true); // RULE: approve mission if a spy is on it and nearly won
+                }
             }
             if (team.length() == spiesOnMission) {
-                return false; // RULE: don't approve a mission with only spies
+                return touchOfRandom(false); // RULE: don't approve a mission with only spies
             }
-            if (spies.length() == spiesOnMission) {
-                return false; // RULES: reject mission with zero or both spies on mission
+            if (spies.length() == spiesOnMission || spiesOnMission == 0) {
+                return touchOfRandom(false); // RULES: reject mission with zero or both spies on mission
             }
             return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
         } else { // is resistance
@@ -172,7 +181,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
             if (spiesOnMission > 0) {
                 return false; // RULE: don't approve if spy is on mission team
             }
-            return touchOfRandom(true); // RULE: approve all other missions
+            return true; // RULE: approve all other missions
         }
     }
 
@@ -212,7 +221,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         }
         int spiesOnMission = numberContained(team, spies);
         if (team.length() == spiesOnMission) {
-            return false; // RULE: don't betray if the whole team are spies
+            return touchOfRandom(false); // RULE: don't betray if the whole team are spies
         }
         if (spiesOnMission == 1 && team.indexOf(name) != 0) {
             return touchOfRandom(true);
