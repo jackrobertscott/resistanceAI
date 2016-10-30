@@ -32,8 +32,8 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
 
-    public BoneCrusher(GroundsKeeper groundsKeeper) {
-        gk = groundsKeeper;
+    public BoneCrusher() {
+        gk = new GroundsKeeper();
         shrub = gk.plant();
         stats = new HashMap<Character, HashMap<Move, Integer[]>>();
         random = new Random();
@@ -64,17 +64,25 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         if (this.failures.size() != failures) { // mission failed
             this.failures.add(round - 1);
 
-            if (round > 1) {
-                gk.feed(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
-                gk.feed(shrub, Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));
-                gk.feed(shrub, Move.VOTED_TEAM_UNSUCCESSFUL, yays.contains(name));
+            for (char player : players.toCharArray()) {
+                if (round > 1) {
+                    gk.feed(stats.get(player), Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(player+""));
+                    gk.feed(stats.get(player), Move.ON_TEAM_UNSUCCESSFUL, team.contains(player+""));
+                    gk.feed(stats.get(player), Move.VOTED_TEAM_UNSUCCESSFUL, yays.contains(player+""));
+                }
             }
         } else { // mission succeeded
-            if (round > 1) {
-                gk.feed(shrub, Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(name));
-                gk.feed(shrub, Move.ON_TEAM_SUCCESSFUL, team.contains(name));
-                gk.feed(shrub, Move.VOTED_TEAM_SUCCESSFUL, yays.contains(name));
+            for (char player : players.toCharArray()) {
+                if (round > 1) {
+                    gk.feed(stats.get(player), Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(player+""));
+                    gk.feed(stats.get(player), Move.ON_TEAM_SUCCESSFUL, team.contains(player+""));
+                    gk.feed(stats.get(player), Move.VOTED_TEAM_SUCCESSFUL, yays.contains(player+""));
+                }
             }
+        }
+
+        if (round > 1) {
+            guessSpies();
         }
 
         if (spies.indexOf('?') == -1) {
@@ -85,8 +93,48 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         }
 
         if (round == 6) { // end of game
-            gk.reap(shrub, this.failures.size() > 2 ? spy : !spy, spy);
+            for (char player : players.toCharArray()) {
+                if (round > 1) {
+                    debug(gk.movesToString(stats.get(player)));
+                }
+            }
         }
+    }
+
+    /**
+     * Based on a number of observations combined with weightings, guess who is most likely to be a spy
+     *
+     * @return a string of assumed spies
+     */
+    private String guessSpies() {
+        int numPlayers = players.length();
+        char peeps[] = new char[numPlayers];
+        double data[] = new double[numPlayers];
+        Arrays.fill(peeps, '0');
+        Arrays.fill(data, Double.NEGATIVE_INFINITY);
+
+        for (int i = 0; i < numPlayers; i++) {
+            char player = players.charAt(i);
+            double spyishness = gk.tame(stats.get(player));
+            debug(spyishness+"");
+            for (int j = 0; j < numPlayers; j++) {
+                if (data[j] < spyishness) {
+                    for (int a = numPlayers - 1; a > j; a--) {
+                        data[a] = data[a - 1];
+                        peeps[a] = peeps[a - 1];
+                    }
+                    data[j] = spyishness;
+                    peeps[j] = player;
+                    break;
+                }
+            }
+        }
+
+        String guesses = "";
+        for (int i = 0; i < spies.length(); i++) {
+            guesses += peeps[i];
+        }
+        return guesses;
     }
 
     /**

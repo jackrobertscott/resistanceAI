@@ -55,6 +55,23 @@ public class GroundsKeeper {
     }
 
     /**
+     * Guess the spyishness of an agent
+     *
+     * @param shrub set of moves made by a agent
+     * @return spyishness
+     */
+    public double tame(HashMap<Move, Integer[]> shrub) {
+        double spyishness = 0.0;
+        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_SUCCESSFUL) * -1.0;
+        spyishness += calculatePercentage(shrub, Move.SELECTED_TEAM_UNSUCCESSFUL) * 1.0;
+        spyishness += calculatePercentage(shrub, Move.ON_TEAM_SUCCESSFUL) * -1.0;
+        spyishness += calculatePercentage(shrub, Move.ON_TEAM_UNSUCCESSFUL) * 1.0;
+        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_SUCCESSFUL) * -1.0;
+        spyishness += calculatePercentage(shrub, Move.VOTED_TEAM_UNSUCCESSFUL) * 1.0;
+        return spyishness;
+    }
+
+    /**
      * @return data record keeper
      */
     private HashMap<Move, Integer[]> createMoves() {
@@ -75,29 +92,38 @@ public class GroundsKeeper {
      *
      * @return string representation of the model
      */
-    private String movesToString(HashMap<Move, Integer[]> moves, boolean spy) {
+    public String movesToString(HashMap<Move, Integer[]> moves) {
         String out = "-------------------------------\n";
-        out += "IS_SPY: " + spy + "\n";
-        out += "SELECTED_TEAM_SUCCESSFUL: " + ((double) moves.get(Move.SELECTED_TEAM_SUCCESSFUL)[1] / (double) moves.get(Move.SELECTED_TEAM_SUCCESSFUL)[0]) + "\n";
-        out += "SELECTED_TEAM_UNSUCCESSFUL: " + ((double) moves.get(Move.SELECTED_TEAM_UNSUCCESSFUL)[1] / (double) moves.get(Move.SELECTED_TEAM_UNSUCCESSFUL)[0]) + "\n";
-        out += "ON_TEAM_SUCCESSFUL: " + ((double) moves.get(Move.ON_TEAM_SUCCESSFUL)[1] / (double) moves.get(Move.ON_TEAM_SUCCESSFUL)[0]) + "\n";
-        out += "ON_TEAM_UNSUCCESSFUL: " + ((double) moves.get(Move.ON_TEAM_UNSUCCESSFUL)[1] / (double) moves.get(Move.ON_TEAM_UNSUCCESSFUL)[0]) + "\n";
-        out += "VOTED_TEAM_SUCCESSFUL: " + ((double) moves.get(Move.VOTED_TEAM_SUCCESSFUL)[1] / (double) moves.get(Move.VOTED_TEAM_SUCCESSFUL)[0]) + "\n";
-        out += "VOTED_TEAM_UNSUCCESSFUL: " + ((double) moves.get(Move.VOTED_TEAM_UNSUCCESSFUL)[1] / (double) moves.get(Move.VOTED_TEAM_UNSUCCESSFUL)[0]);
+        out += "SELECTED_TEAM_SUCCESSFUL: " + calculatePercentage(moves, Move.SELECTED_TEAM_SUCCESSFUL) + "\n";
+        out += "SELECTED_TEAM_UNSUCCESSFUL: " + calculatePercentage(moves, Move.SELECTED_TEAM_UNSUCCESSFUL) + "\n";
+        out += "ON_TEAM_SUCCESSFUL: " + calculatePercentage(moves, Move.ON_TEAM_SUCCESSFUL) + "\n";
+        out += "ON_TEAM_UNSUCCESSFUL: " + calculatePercentage(moves, Move.ON_TEAM_UNSUCCESSFUL) + "\n";
+        out += "VOTED_TEAM_SUCCESSFUL: " + calculatePercentage(moves, Move.VOTED_TEAM_SUCCESSFUL) + "\n";
+        out += "VOTED_TEAM_UNSUCCESSFUL: " + calculatePercentage(moves, Move.VOTED_TEAM_UNSUCCESSFUL);
         return out;
+    }
+
+    private double calculatePercentage(HashMap<Move, Integer[]> moves, Move move) {
+        Integer[] action = moves.get(move);
+        if (action[0] == 0) return 0;
+        return (double) action[1] / (double) action[0];
     }
 
     /**
      * Print out the long term spy data
      */
     public void printLongTermSpy() {
-        System.out.println(movesToString(longTermSpy, true));
+        String msg = movesToString(longTermSpy);
+        msg += "\nIS_SPY: true";
+        System.out.println(msg);
     }
 
     /**
      * Print out the long term non-spy data
      */
     public void printLongTermNonSpy() {
-        System.out.println(movesToString(longTermNonSpy, false));
+        String msg = movesToString(longTermNonSpy);
+        msg += "\nIS_SPY: false";
+        System.out.println(msg);
     }
 }
