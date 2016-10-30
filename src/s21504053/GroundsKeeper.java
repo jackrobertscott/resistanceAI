@@ -76,14 +76,14 @@ public class GroundsKeeper {
      * @return string representation of the model
      */
     private String movesToString(HashMap<Move, Integer[]> moves, boolean spy) {
-        String out = "";
-        out += "SELECTED_TEAM_SUCCESSFUL: " + Arrays.toString(moves.get(Move.SELECTED_TEAM_SUCCESSFUL)) + "\n";
-        out += "SELECTED_TEAM_UNSUCCESSFUL: " + Arrays.toString(moves.get(Move.SELECTED_TEAM_UNSUCCESSFUL)) + "\n";
-        out += "ON_TEAM_SUCCESSFUL: " + Arrays.toString(moves.get(Move.ON_TEAM_SUCCESSFUL)) + "\n";
-        out += "ON_TEAM_UNSUCCESSFUL: " + Arrays.toString(moves.get(Move.ON_TEAM_UNSUCCESSFUL)) + "\n";
-        out += "VOTED_TEAM_SUCCESSFUL: " + Arrays.toString(moves.get(Move.VOTED_TEAM_SUCCESSFUL)) + "\n";
-        out += "VOTED_TEAM_UNSUCCESSFUL: " + Arrays.toString(moves.get(Move.VOTED_TEAM_UNSUCCESSFUL)) + "\n";
-        out += "IS_SPY: " + spy;
+        String out = "-------------------------------\n";
+        out += "IS_SPY: " + spy + "\n";
+        out += "SELECTED_TEAM_SUCCESSFUL: " + ((double) moves.get(Move.SELECTED_TEAM_SUCCESSFUL)[1] / (double) moves.get(Move.SELECTED_TEAM_SUCCESSFUL)[0]) + "\n";
+        out += "SELECTED_TEAM_UNSUCCESSFUL: " + ((double) moves.get(Move.SELECTED_TEAM_UNSUCCESSFUL)[1] / (double) moves.get(Move.SELECTED_TEAM_UNSUCCESSFUL)[0]) + "\n";
+        out += "ON_TEAM_SUCCESSFUL: " + ((double) moves.get(Move.ON_TEAM_SUCCESSFUL)[1] / (double) moves.get(Move.ON_TEAM_SUCCESSFUL)[0]) + "\n";
+        out += "ON_TEAM_UNSUCCESSFUL: " + ((double) moves.get(Move.ON_TEAM_UNSUCCESSFUL)[1] / (double) moves.get(Move.ON_TEAM_UNSUCCESSFUL)[0]) + "\n";
+        out += "VOTED_TEAM_SUCCESSFUL: " + ((double) moves.get(Move.VOTED_TEAM_SUCCESSFUL)[1] / (double) moves.get(Move.VOTED_TEAM_SUCCESSFUL)[0]) + "\n";
+        out += "VOTED_TEAM_UNSUCCESSFUL: " + ((double) moves.get(Move.VOTED_TEAM_UNSUCCESSFUL)[1] / (double) moves.get(Move.VOTED_TEAM_UNSUCCESSFUL)[0]);
         return out;
     }
 

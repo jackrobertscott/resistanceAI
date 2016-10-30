@@ -14,7 +14,6 @@ public class Run{
       FileWriter fw = new FileWriter(f);
       Competitor[] contenders = {
         new Competitor(new cits3001_2016s2.RandomAgent(),"Randy","Tim"),
-        new Competitor(new s21504053.BoneCrusher(),"BoneCrusher","Jack"),
         new Competitor(new s21130321.Ernie21130321(),"ErnieAI","Tahmer")
       };
       fw.write(Game.tournament(contenders, 5000));
