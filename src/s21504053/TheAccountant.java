@@ -87,20 +87,15 @@ public class TheAccountant implements cits3001_2016s2.Agent {
      * @return a String containing the names of all the agents in a round
      */
     public String do_Nominate(int number) {
-        HashSet<Character> nominees = new HashSet<Character>();
-        nominees.add(name.charAt(0)); // RULE: add self to the nominees
-
-        for (int i = 0; i < number; i++) {
+        HashSet<Character> team = new HashSet<Character>();
+        for(int i = 0; i<number; i++){
             char c = players.charAt(random.nextInt(players.length()));
-            while (nominees.contains(c) || spies.indexOf(c) != -1) {
-                c = players.charAt(random.nextInt(players.length()));
-            }
-            nominees.add(c); // RULE: do not add any (other) spies
+            while(team.contains(c)) c = players.charAt(random.nextInt(players.length()));
+            team.add(c);
         }
-
-        String nominated = "";
-        for (Character c : nominees) nominated += c;
-        return nominated;
+        String tm = "";
+        for(Character c: team)tm+=c;
+        return tm;
     }
 
     /**
@@ -116,62 +111,12 @@ public class TheAccountant implements cits3001_2016s2.Agent {
     }
 
     /**
-     * Get the number of mentioned names in the group
-     *
-     * @param names the player group to check
-     * @return the number of names that were contained in the group
-     */
-    private int numberContained(String group, String names) {
-        int contained = 0;
-        for (char check : group.toCharArray()) {
-            if (names.indexOf(check) != -1) {
-                contained++;
-            }
-        }
-        return contained;
-    }
-
-    /**
      * Gets an agents votes on the last reported round
      *
      * @return true, if the agent votes for the round, false, if they votes against it.
      */
     public boolean do_Vote() {
-        votes++;
-        if (round == 1) {
-            return true; // RULE: approve any mission on the first round
-        }
-        int spiesOnMission = numberContained(team, spies);
-        if (spy) { // is government spy
-            if (failures.size() == 2) {
-                if (round + failures.size() >= 5) {
-                    return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
-                } else {
-                    return touchOfRandom(true); // RULE: approve mission if a spy is on it and nearly won
-                }
-            }
-            if (team.length() == spiesOnMission) {
-                return touchOfRandom(false); // RULE: don't approve a mission with only spies
-            }
-            if (spies.length() == spiesOnMission || spiesOnMission == 0) {
-                return touchOfRandom(false); // RULES: reject mission with zero or both spies on mission
-            }
-            return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
-        } else { // is resistance
-            if (votes == 5) {
-                return true; // RULE: approve 5th mission else government wins
-            }
-            if (leader.equals(name)) {
-                return true; // RULE: approve mission if I am leader
-            }
-            if (team.length() == 3 && team.contains(name)) {
-                return false; // RULE: don't approve if team of 3 and agent not on team
-            }
-            if (spiesOnMission > 0) {
-                return false; // RULE: don't approve if spy is on mission team
-            }
-            return true; // RULE: approve all other missions
-        }
+        return (random.nextInt(2)!=0);
     }
 
     /**
@@ -199,23 +144,7 @@ public class TheAccountant implements cits3001_2016s2.Agent {
      * @return true if agent betrays, false otherwise
      **/
     public boolean do_Betray() {
-        if (!spy) {
-            return false; // should only be called if is spy... but just in case
-        }
-        if (round + failures.size() >= 5) {
-            return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
-        }
-        if (failures.size() == 2) {
-            return true; // RULE: winning move!
-        }
-        int spiesOnMission = numberContained(team, spies);
-        if (team.length() == spiesOnMission) {
-            return false; // RULE: don't betray if the whole team are spies
-        }
-        if (spiesOnMission == 1 && team.indexOf(name) != 0) {
-            return touchOfRandom(true);
-        }
-        return touchOfRandom(true);
+        return (spy?random.nextInt(2)!=0:false);
     }
 
     /**
@@ -223,11 +152,7 @@ public class TheAccountant implements cits3001_2016s2.Agent {
      *
      * @param traitors the number of people on the round who chose to betray (0 for success, greater than 0 for failure)
      **/
-    public void get_Traitors(int traitors) {
-        if (!spy && traitors == spies.length()) {
-            spies = team;
-        }
-    }
+    public void get_Traitors(int traitors) {}
 
     /**
      * Optional method to accuse other Agents of being spies.
@@ -257,17 +182,6 @@ public class TheAccountant implements cits3001_2016s2.Agent {
      * @param accused the names of the Agents being Accused, concatenated in a String.
      */
     public void get_Accusation(String accuser, String accused) {
-    }
-
-    /**
-     * This function is to slightly put off compeditors by making slightly random decisions.
-     * This should only be used on non-critical return values or values that will not lose the game
-     *
-     * @param expected the value to slightly randomise
-     * @return a slightly randomised value
-     */
-    private boolean touchOfRandom(boolean expected) {
-        return random.nextInt(10) == 0 ? !expected : expected;
     }
 
     /**
