@@ -6,10 +6,10 @@ then
   while [ $wha -lt $1 ]; do
     (
     apples=0
-    while [ $apples -lt 1 ]; do
+    while [ $apples -lt 10 ]; do
       (
       COUNTER=0
-      while [  $COUNTER -lt 10 ]; do
+      while [  $COUNTER -lt 100 ]; do
         java cits3001_2016s2.Game $2
         let COUNTER=COUNTER+1
       done

@@ -6,9 +6,7 @@ import java.util.*;
 import java.io.*;
 
 public class Run {
-
     public static void main(String args[]) {
-
         try {
             File f = new File("Results.html");
             FileWriter fw = new FileWriter(f);
@@ -24,7 +22,4 @@ public class Run {
             System.out.println("IO fail");
         }
     }
-
-}  
-
-
+}
