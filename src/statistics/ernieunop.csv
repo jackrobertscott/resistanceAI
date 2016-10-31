@@ -1,0 +1,15 @@
+percentage of times the Resistance Win
+each row is the average of 10 rounds of 100 games
+min,max,avg
+players =  5
+0.16,0.27,0.23
+players =  6
+0.06,0.13,0.084
+players =  7
+0.06,0.21,0.156
+players =  8
+0.01,0.08,0.052
+players =  9
+0.12,0.22,0.169
+players =  10
+0.14,0.26,0.205
