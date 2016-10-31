@@ -22,8 +22,7 @@ public class Run{
       };
       fw.write(Game.tournament(contenders, 10000));
       fw.close();
-    }
-    catch(IOException e){System.out.println("IO fail");}
+    } catch (IOException io) {}
   }
 
 }

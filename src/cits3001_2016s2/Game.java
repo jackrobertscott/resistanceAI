@@ -1,6 +1,12 @@
 package cits3001_2016s2;
 
 
+import s21130321.Ernie21130321;
+import s21504053.BoneCrusher;
+import s21504053.GroundsKeeper;
+import s21504053.LogicMan;
+import s21504053.TheAccountant;
+
 import java.util.*;
 import java.io.*;
 /**
@@ -309,8 +315,8 @@ public class Game{
       }
     }
     Arrays.sort(agents);
-    String ret =
-    "<html><body><table><tr><th>Name</th><th>Author</th><th>Spy Wins</th><th>Spy Plays</th><th>Res Wins</th><th>Res Plays</th><th>Win Rate</th></tr>";
+    String ret = 
+    "<html><body><table><tr><th>Name</th><th>Author</th><th>Spy Wins</th><th>Spy Plays</th><th>Res Wins</th><th>Res Plays</th><th>Win Rate</th><th>Spy Win Rate</th><th>Res Win Rate</th></tr>";
     for(int i = 0; i< agents.length; i++)
       ret+= agents[i];
     return ret+"</table></body></html>";
@@ -321,17 +327,26 @@ public class Game{
    * Sets up game with random agents and plays
    **/
   public static void main(String[] args){
+    GroundsKeeper gk = new GroundsKeeper();
+    Game g;
 
-    Game g = new Game();
-    char[] things = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
-    int x = Integer.parseInt(args[0]);
-    g.stopwatchOn();g.addPlayer(new HumanAgent());g.stopwatchOff(1000,'J');
-    g.stopwatchOn();g.addPlayer(new s21130321.ErnieBae());g.stopwatchOff(1000,'M');
-   for(int i = 0; i < x; i++)
-    {
-      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,things[i]);
-   }
-  g.setup();
-  g.play();
+    for (int i = 0; i < 10000; i++) {
+      g = new Game();
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'A');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'B');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'C');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'D');
+      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,'F');
+      g.stopwatchOn();g.addPlayer(new TheAccountant(gk));g.stopwatchOff(1000,'F');
+      g.setup();
+      g.play();
+    }
+
+    gk.brewPotion();
+    gk.printIngredients();
+//    gk.printLongTermSpy();
+//    gk.printLongTermNonSpy();
   }
+  
+
 }

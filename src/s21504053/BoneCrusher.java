@@ -17,21 +17,23 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
 
     private String name; // agent name
     private String players; // all players in the game
-    private Model model;
+    private GroundsKeeper gk;
+    private HashMap<Character, HashMap<Move, Integer[]>> stats;
     private Random random;
 
     private int round; // mission number
     private String team; // members on the mission executed
+    private String yays; // members who voted for mission
     private String leader; // mission leader proposed
     private HashSet<Integer> failures; // set of failed missions
     private int votes; // number of votes for executed round
-    private boolean agreed; // agreed to last vote
 
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
 
     public BoneCrusher() {
-        model = new Model();
+        gk = new GroundsKeeper();
+        stats = new HashMap<Character, HashMap<Move, Integer[]>>();
         random = new Random();
         failures = new HashSet<Integer>();
         votes = 0;
@@ -49,34 +51,69 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public void get_status(String name, String players, String spies, int round, int failures) {
         this.name = name;
         this.players = players;
-
+        this.spies = spies;
+        this.spy = spies.contains(name);
         this.round = round;
+        boolean failed = false;
+
         if (this.failures.size() != failures) { // mission failed
             this.failures.add(round - 1);
-            if (round > 1) {
-                model.act(Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(name));
-                model.act(Move.ON_TEAM_UNSUCCESSFUL, team.contains(name));
-                model.act(Move.VOTED_TEAM_UNSUCCESSFUL, agreed);
+            failed = true;
+        }
+
+        for (char player : players.toCharArray()) {
+            if (round == 1) {
+                stats.put(player, gk.plant());
+            } else {
+                if (failed) {
+                    gk.feed(stats.get(player), Move.SELECTED_TEAM_UNSUCCESSFUL, leader.equals(player+""));
+                    gk.feed(stats.get(player), Move.ON_TEAM_UNSUCCESSFUL, team.contains(player+""));
+                    gk.feed(stats.get(player), Move.VOTED_TEAM_UNSUCCESSFUL, yays.contains(player+""));
+                } else {
+                    gk.feed(stats.get(player), Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(player+""));
+                    gk.feed(stats.get(player), Move.ON_TEAM_SUCCESSFUL, team.contains(player+""));
+                    gk.feed(stats.get(player), Move.VOTED_TEAM_SUCCESSFUL, yays.contains(player+""));
+                }
             }
-        } else { // mission succeeded
-            if (round > 1) {
-                model.act(Move.SELECTED_TEAM_SUCCESSFUL, leader.equals(name));
-                model.act(Move.ON_TEAM_SUCCESSFUL, team.contains(name));
-                model.act(Move.VOTED_TEAM_SUCCESSFUL, agreed);
+        }
+    }
+
+    /**
+     * Based on a number of observations combined with weightings, guess who is most likely to be a spy
+     *
+     * @return a string of assumed spies
+     */
+    private String guessSpies() {
+        if (spies.indexOf('?') == -1) return spies; // when spies are already known
+
+        int numPlayers = players.length();
+        char peeps[] = new char[numPlayers]; // don't include self
+        double data[] = new double[numPlayers]; // don't include self
+        Arrays.fill(peeps, '0');
+        Arrays.fill(data, Double.NEGATIVE_INFINITY);
+
+        for (int i = 0; i < numPlayers; i++) {
+            char player = players.charAt(i);
+            double spyishness = gk.tame(stats.get(player));
+            if (name.equals(player+"")) spyishness = Double.NEGATIVE_INFINITY;
+            for (int j = 0; j < numPlayers; j++) {
+                if (data[j] < spyishness) {
+                    for (int a = numPlayers - 1; a > j; a--) {
+                        data[a] = data[a - 1];
+                        peeps[a] = peeps[a - 1];
+                    }
+                    data[j] = spyishness;
+                    peeps[j] = player;
+                    break;
+                }
             }
         }
 
-        if (spies.indexOf('?') == -1) {
-            this.spies = spies;
-            this.spy = spies.contains(name);
-        } else {
-            this.spies = "";
+        String guesses = "";
+        for (int i = 0; i < spies.length(); i++) {
+            guesses += peeps[i];
         }
-
-        if (round == 6) { // end of game
-            model.end(this.failures.size() > 2 ? spy : !spy, spy);
-            debug(model.toString());
-        }
+        return guesses;
     }
 
     /**
@@ -90,10 +127,11 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public String do_Nominate(int number) {
         HashSet<Character> nominees = new HashSet<Character>();
         nominees.add(name.charAt(0)); // RULE: add self to the nominees
+        String guesses = spy ? spies : guessSpies();
 
         for (int i = 0; i < number; i++) {
             char c = players.charAt(random.nextInt(players.length()));
-            while (nominees.contains(c) || spies.indexOf(c) != -1) {
+            while ((nominees.contains(c) || guesses.contains(c+"")) && nominees.size() < number) {
                 c = players.charAt(random.nextInt(players.length()));
             }
             nominees.add(c); // RULE: do not add any (other) spies
@@ -140,40 +178,39 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     public boolean do_Vote() {
         votes++;
         if (round == 1) {
-            agreed = true; // RULE: approve any mission on the first round
-        } else {
-            int spiesOnMission = numberContained(team, spies);
-            if (spy) { // is government spy
-                if (spiesOnMission == 0) {
-                    agreed = false; // RULE: reject if no spies are on mission
-                }
-                if (failures.size() == 2) {
-                    agreed = true; // RULE: approve mission if a spy is on it and nearly won
-                }
-                if (team.length() == spiesOnMission) {
-                    agreed = false; // RULE: don't approve a mission with only spies
-                }
-                if (spies.length() == spiesOnMission) {
-                    agreed = false; // RULES: reject mission with zero or both spies on mission
-                }
-                return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
-            } else { // is resistance
-                if (votes == 5) {
-                    agreed = true; // RULE: approve 5th mission else government wins
-                }
-                if (leader.equals(name)) {
-                    agreed = true; // RULE: approve mission if I am leader
-                }
-                if (team.length() == 3 && team.contains(name)) {
-                    agreed = false; // RULE: don't approve if team of 3 and agent not on team
-                }
-                if (spiesOnMission > 0) {
-                    agreed = false; // RULE: don't approve if spy is on mission team
-                }
-                agreed = touchOfRandom(true); // RULE: approve all other missions
-            }
+            return true; // RULE: approve any mission on the first round
         }
-        return agreed;
+        int spiesOnMission = numberContained(team, spy ? spies : guessSpies());
+        if (spy) { // is government spy
+            if (failures.size() == 2) {
+                if (round + failures.size() >= 5) {
+                    return true; // e.g. round 4 with only one failure so far, must fail rounds 4 + 5 to win
+                } else {
+                    return touchOfRandom(true); // RULE: approve mission if a spy is on it and nearly won
+                }
+            }
+            if (team.length() == spiesOnMission) {
+                return touchOfRandom(false); // RULE: don't approve a mission with only spies
+            }
+            if (spies.length() == spiesOnMission || spiesOnMission == 0) {
+                return touchOfRandom(false); // RULES: reject mission with zero or both spies on mission
+            }
+            return touchOfRandom(true); // RULE: approve if atleast one spy is on the team
+        } else { // is resistance
+            if (votes == 5) {
+                return true; // RULE: approve 5th mission else government wins
+            }
+            if (leader.equals(name)) {
+                return true; // RULE: approve mission if I am leader
+            }
+            if (team.length() == 3 && team.contains(name)) {
+                return false; // RULE: don't approve if team of 3 and agent not on team
+            }
+            if (spiesOnMission > 0) {
+                return false; // RULE: don't approve if spy is on mission team
+            }
+            return true; // RULE: approve all other missions
+        }
     }
 
     /**
@@ -182,6 +219,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @param yays the names of the agents who voted for the round
      **/
     public void get_Votes(String yays) {
+        this.yays = yays;
     }
 
     /**
@@ -216,7 +254,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
         if (spiesOnMission == 1 && team.indexOf(name) != 0) {
             return touchOfRandom(true);
         }
-        return random.nextInt(2) != 0;
+        return touchOfRandom(true);
     }
 
     /**
@@ -239,16 +277,20 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return a string containing the name of each accused agent.
      */
     public String do_Accuse() {
-        int number = random.nextInt(players.length());
-        HashSet<Character> team = new HashSet<Character>();
-        for (int i = 0; i < number; i++) {
-            char c = players.charAt(random.nextInt(players.length()));
-            while (team.contains(c)) c = players.charAt(random.nextInt(players.length()));
-            team.add(c);
+        if (spy) {
+            int number = random.nextInt(players.length());
+            HashSet<Character> team = new HashSet<Character>();
+            for (int i = 0; i < number; i++) {
+                char c = players.charAt(random.nextInt(players.length()));
+                while (team.contains(c)) c = players.charAt(random.nextInt(players.length()));
+                team.add(c);
+            }
+            String tm = "";
+            for (Character c : team) tm += c;
+            return tm;
+        } else {
+            return guessSpies();
         }
-        String tm = "";
-        for (Character c : team) tm += c;
-        return tm;
     }
 
     /**
@@ -268,7 +310,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
      * @return a slightly randomised value
      */
     private boolean touchOfRandom(boolean expected) {
-        return random.nextInt(5) == 0 ? !expected : expected;
+        return expected;// random.nextInt(10) == 0 ? !expected : expected;
     }
 
     /**

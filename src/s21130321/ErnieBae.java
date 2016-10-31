@@ -356,6 +356,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
   }
 
   private double doBae(double pA, double pB, double pBa){
+    if (pB == 0.0) return 0.0;
     return (pBa * pA) / pB;
   }
 
