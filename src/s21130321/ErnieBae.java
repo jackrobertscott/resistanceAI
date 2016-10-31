@@ -33,26 +33,24 @@ public class ErnieBae implements cits3001_2016s2.Agent{
   private String notonTeam;
   private String votedyay;
   private String votednay;
-
   private boolean spy;
   private boolean failedLast;
-
-  private Random random;
-
   private int nextMish;
   private int fails;
   private int votingRound;
   private int numTraitors;
-
   private HashMap<String, Double> spyish;
-
   private ArrayList<String> ncombOnMish;
   private ArrayList<String> ncombOffMish;
   private List sl;
   private boolean DEBUG;
 
+  /**
+  * constructor
+  * initialises a few global variables for global use;
+  */
   public ErnieBae(){
-    DEBUG = true;
+    DEBUG = false;
     notSpies = "";
     votednay = "";
     notonTeam = "";
@@ -62,6 +60,10 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     ncombOnMish = new ArrayList<String>();
     ncombOffMish = new ArrayList<String>();
   }
+  /**
+  * prints out debugging messages if debug is enabled
+  * @param a is a String for the message
+  */
   public void debug(String a){
     if(DEBUG)
     {
@@ -84,13 +86,16 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     this.players = players;
     this.spies = spies;
     this.fails = failures;
+
     if(spies.indexOf(name) != -1)
     {
       spy = true;
     }
+    //if its the first mission and not a spy initilaise the spy probabilities.
     if(nextMish == 1 && !spy){
       initSpyish();
     }
+    //if you are a spy fill a string with the other non spy agents
     if(spy && nextMish == 1)
     {
       for(int i = 0; i < players.length(); i++)
@@ -101,7 +106,6 @@ public class ErnieBae implements cits3001_2016s2.Agent{
         }
       }
       debug(notSpies + " not Spies");
-
     }
   }
 
@@ -114,6 +118,9 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    * */
   public String do_Nominate(int number){
     Random r = new Random();
+
+
+    //if you are a spy then add youself to the team and two random other non spies.
     if(spy)
     {
       String team = name;
@@ -124,9 +131,13 @@ public class ErnieBae implements cits3001_2016s2.Agent{
       }
       return team;
     }
+    //if you are not the spy then
+    //get a sorted list of the spy probabilities
+    //and pick the number of lowest entries for the team
     else{
       sl = entriesSortedByValues(spyish);
       debug(Arrays.toString(sl.toArray()) + " sorted list");
+
       String team = "";
       for(int i = 0; i < number; i++)
       {
@@ -136,9 +147,6 @@ public class ErnieBae implements cits3001_2016s2.Agent{
       debug(team + " team");
       return team;
     }
-    //(Selection) Include itself when selecting teams; lowers probability of spy on team
-    //(Selection) (Spy) Include one spy when selecting teams (always self).
-
   }
 
   /**
@@ -147,6 +155,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    * @param mission a String containing the names of all the agents in the mission
    **/
   public void get_ProposedMission(String leader, String mission){
+    //increment the vote round
     votingRound++;
     this.leader = leader.charAt(0);;
     this.mishTeam = mission;
@@ -170,26 +179,28 @@ public class ErnieBae implements cits3001_2016s2.Agent{
       if(players.length() == 5 || (mishTeam.indexOf(name) == -1)) return false;
 
       //(Voting) Reject missions with known spies on the team.
-      // if probability is high to fail the mission false limit determined by trial and error
 
-      //calculate minimum bae value for team of size.
+      //get that sorted list
       sl = entriesSortedByValues(spyish);
       double minbae = 0.0;
       double mishbae = 0.0;
 
+      //calculate minimum bay value for team of size.
       for(int i = 0; i < mishTeam.length(); i++)
       {
         minbae+=(double)((Map.Entry)sl.get(i)).getValue();
       }
       debug(String.valueOf(minbae) + "MinBae");
-      //calculate bae value for this team
+
+      //calculate bay value for this team
       for(int i = 0; i < mishTeam.length(); i++)
       {
         mishbae+=spyish.get(String.valueOf(mishTeam.charAt(i)));
       }
       debug(String.valueOf(mishbae) + "MishBae");
+
       //decide if its good enough within certain percentage
-      if(mishbae > minbae + (minbae / 5)) return false;
+      if(mishbae > minbae + (minbae / 10)) return false;
       return true;
     }
     else{
@@ -209,6 +220,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    * @param yays the names of the agents who voted for the mission
    **/
   public void get_Votes(String yays){
+    //get all the people who voted nay and yay and put them into separate strings
     votedyay = yays;
     votednay = "";
     for(int i = 0; i < players.length(); i++)
@@ -226,9 +238,11 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    * @param mission the Agents being sent on a mission
    **/
   public void get_Mission(String mission){
+    //add people on mission to String
     votingRound = 0;
     this.mishTeam = mission;
     notonTeam = "";
+    //add people not on mission to string
     for(int i = 0; i < players.length(); i++)
     {
       if(!mishTeam.contains(String.valueOf(players.charAt(i))))
@@ -249,8 +263,8 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     }
     else{
       int sOM = numSpiesOnMish();
-      if (fails == 2) return true;
-      if (fails == 1 && nextMish == 4) return true;
+      if (fails == 2) return true; //if there are two failed missions then betray
+      if (fails == 1 && nextMish == 4) return true; //if you need to fail the last two missions then betray
       if(mishTeam.length() == 2) return false; //dont fail if its only you and another.
       if(sOM > 2) return false; //more than one spy then let them fail it.
       return true;
@@ -279,6 +293,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
   public String do_Accuse(){
     if(!spy)
     {
+      //at the end of a round we update the spyish probabilities
       updateSpyish();
     }
     return "";
@@ -291,6 +306,10 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    * */
   public void get_Accusation(String accuser, String accused){}
 
+  /**
+  * method that calculates the number of spies that are on a mission.
+  * @return the number of spies
+  * */
   private int numSpiesOnMish(){
     int numSpiesOnMish = 0;
     for(int i = 0; i < mishTeam.length(); i++)
@@ -300,7 +319,11 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     debug(numSpiesOnMish + " numSpiesOnMish");
     return numSpiesOnMish;
   }
-
+  /**
+  * this initilaises the probabilities that each other agent is a spyish
+  * not including yourself there is a numspies/numplayers chance anyone is a spy
+  * sets your own probability to 0.0 becasue we arent a spy
+  **/
   private void initSpyish(){
     spyish = new HashMap<String, Double>();
     for(int i = 0; i < players.length(); i++)
@@ -311,55 +334,82 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     spyish.put(name, 0.0);
   }
 
+  /**
+  * this is the main method that runs the bayesian statistics.
+  * it updates the probability of each Agent being a spyish
+  **/
+
   private void updateSpyish(){
     double pA, pB, pBa, pAb;
-    //update combinations
+    //clear combinations
+
     ncombOnMish.clear();
     ncombOffMish.clear();
+
     debug(mishTeam + " " + notonTeam + " mishteam and not team");
+
+    //need these combinations to calculate p(B)the probability of the mission outcome given the specific team
     combOnMish(mishTeam, new StringBuffer(), 0, numTraitors);
     combOffMish(notonTeam,new StringBuffer(), 0, (spies.length() - numTraitors));
+
+    //for each player we need to caluclate P(A|B) this is the probability they are a spy given the last mission.
     for(int i = 0; i < players.length(); i++)
     {
+      //poinless array so that i can use the same function. for calculating pBa
       ArrayList<String> pointless = new ArrayList<String>();
-
       String cur = String.valueOf(players.charAt(i));
+      //was the current player on the last mission
       boolean onMish = (mishTeam.contains(cur));
       String notcur;
+      //get the current agents prior probability
+      pA = spyish.get(cur);
 
       if(onMish)
       {
-        pA = spyish.get(cur);
-        pB = calcpXX(mishTeam, numTraitors, ncombOnMish);
-
+        //get the people on the mission that are not the current agent
         notcur = mishTeam.replace(cur,"");
         pointless.add(notcur);
-        debug(notcur + " not cur");
-
-        pBa = calcpXX(mishTeam, (numTraitors - 1), pointless);
-        pAb = doBae(pA, pB, pBa);
-        debug(spyish.toString() + " dpyish");
-        spyish.put(cur, pAb);
+        //calculate pBa and pB
+        pBa = calcpXX(mishTeam, pointless);
+        pB = calcpXX(mishTeam, ncombOnMish);
       }
       else
       {
-        pA = spyish.get(cur);
-        pB = calcpXX(notonTeam, (spies.length() - numTraitors), ncombOffMish);
+        //get the people on the mission that is not the current agent
         notcur = notonTeam.replace(cur,"");
         pointless.add(notcur);
-        pBa = calcpXX(notonTeam, ((spies.length() - numTraitors) - 1), pointless);
-        pAb = doBae(pA, pB, pBa);
-        spyish.put(cur, pAb);
-        //debug(pA +" "+ pB +" "+ pBa +" "+ pAb +" "+ "pa,pb,pba,pab");
+        //calculate pBa and pB
+        pB = calcpXX(notonTeam, pointless);
+        pBa = calcpXX(notonTeam, pointless);
       }
+      //this just applies bays rule for the current agent
+      pAb = doBae(pA, pB, pBa);
+      debug(spyish.toString() + " spyish");
+      //update its probability
+      spyish.put(cur, pAb);
     }
   }
 
+  /**
+  * does Bayes rule
+  * @param pA is the probability A is a spy
+  * @param pB the probability of getting a mission outcome with a team
+  * @param pBa the probability of getting the mission outcome assuming A is a spy
+  * @return pAb the probability a is a spy given the mission
+  */
   private double doBae(double pA, double pB, double pBa){
+    if (pB == 0.0) return 0.0;
     return (pBa * pA) / pB;
   }
 
-  //adds all the combinations of a string input, with length choose, to an arraylist
+  /*
+  * calculates all the combinations of an input string that have length == choose
+  * this is an NP+Hard problem but it shoudl be fine as the string inputs are small
+  * @param the input string to pull the combinations for
+  * @param x space to build the string
+  * @param index where to continue from with the recursive call just call the function with 0
+  * @param choose the length of the combinations you want outputted.
+  */
   private void combOnMish(String input, StringBuffer x, int index, int choose)
   {
 
@@ -375,6 +425,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
       x.deleteCharAt(x.length() - 1);
     }
   }
+  //easier to have two functions that do the same thing to update the global variables.. becasue it was weird with recursiveness
   private void combOffMish(String input, StringBuffer y, int index, int choose)
   {
     for(int i = index; i < input.length(); i++)
@@ -390,57 +441,61 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     }
   }
 
-  private double calcpXX(String mTeam, int numTraitors, ArrayList<String> combinations){
+  /*
+  * used to calculate both pB and pBa
+  * @param String that is the Team on the mission
+  * @param all the combinations that could have been spies on this mission.
+  * @return the probability
+  */
+  private double calcpXX(String mTeam, ArrayList<String> combinations){
     double pB = 0.0;
-    if(numTraitors == 0)
+    //for each combination.
+    for(int i = 0; i < combinations.size(); i++)
     {
-      return 1.0;
-    }
-    else
-    {
-      for(int k = 0; k < combinations.size(); k++)
+      pB = 0.0;
+      String current = combinations.get(i);
+      double pbk = 1.0;
+      String inTeamnotCurrent = "";
+      //get the agents that were in the team and are not in the current combination
+      for(int j = 0; j < mTeam.length(); j++)
       {
-        String curcomb = combinations.get(k);
-        String notcomb = "";
-        String[] currents = new String[curcomb.length()];
-        for(int j = 0; j < curcomb.length(); j++)
+        if(!current.contains(String.valueOf(mTeam.charAt(j))))
         {
-          currents[j] = String.valueOf(curcomb.charAt(j));
+          inTeamnotCurrent += mTeam.charAt(j);
         }
-        for(int j = 0; j < mTeam.length(); j++)
-        {
-          if(!curcomb.contains(String.valueOf(mTeam.charAt(j))))
-          {
-            notcomb += mTeam.charAt(j);
+      }
+      //multiply the probability that all the agents we asssme to be spies, actually are spies
+      for(int j = 0; j < current.length(); j++)
+      {
+        pbk *= spyish.get(String.valueOf(current.charAt(j)));
+      }
+      //multiple the probablilty that the agents we assume arent spies actually arent spuies
+      for(int j = 0; j < inTeamnotCurrent.length(); j++)
+      {
+        pbk *= (1 - spyish.get(String.valueOf(inTeamnotCurrent.charAt(j))));
+      }
+      //sum all the combinations
+      pB += pbk;
+    }
+    if(pB == 0.0) pB = 1.0;
+    return (double)pB;
+  }
+
+  /*
+  * a custom sorting to order a map by lowest value.
+  * @param map is the input map containing the key value pairs to be sortedEntries
+  * @retrun returns a list of the map entries sorted by lowst value
+  */
+  private  List<Map.Entry<String, Double>> entriesSortedByValues(Map<String,Double> map) {
+      List<Map.Entry<String,Double>> sortedEntries = new ArrayList<Map.Entry<String,Double>>(map.entrySet());
+      Collections.sort(sortedEntries,
+        new Comparator<Map.Entry<String,Double>>() {
+          @Override
+          public int compare(Map.Entry<String,Double> e1, Map.Entry<String,Double> e2) {
+            return e1.getValue().compareTo(e2.getValue());
           }
         }
-        double pBk = 1.0;
-        for(int m = 0; m < currents.length; m++)
-        {
-          pBk *= spyish.get(currents[m]);
-        }
-        for(int m = 0; m < notcomb.length(); m++)
-        {
-          pBk *= (1 - spyish.get(String.valueOf(notcomb.charAt(m))));
-        }
-        pB += pBk;
-      }
-      return pB;
-    }
-  }
-  static <K,V extends Comparable<? super V>> List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
-
-      List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
-
-      Collections.sort(sortedEntries,
-              new Comparator<Map.Entry<K,V>>() {
-                  @Override
-                  public int compare(Map.Entry<K,V> e1, Map.Entry<K,V> e2) {
-                      return e1.getValue().compareTo(e2.getValue());
-                  }
-              }
       );
-
       return sortedEntries;
   }
 }
