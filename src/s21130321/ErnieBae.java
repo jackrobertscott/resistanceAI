@@ -88,13 +88,10 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     {
       spy = true;
     }
-
-
-    if(nextMish == 1){
+    if(nextMish == 1 && !spy){
       initSpyish();
     }
-
-    if(spy)
+    if(spy && nextMish == 1)
     {
       for(int i = 0; i < players.length(); i++)
       {
@@ -103,9 +100,9 @@ public class ErnieBae implements cits3001_2016s2.Agent{
           notSpies += guy;
         }
       }
-      debug(notSpies + spy + " not Spies");
-    }
+      debug(notSpies + " not Spies");
 
+    }
   }
 
   /**
@@ -130,8 +127,8 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     else{
       sl = entriesSortedByValues(spyish);
       debug(Arrays.toString(sl.toArray()) + " sorted list");
-      String team = name;
-      for(int i = 0; i < number - 1; i++)
+      String team = "";
+      for(int i = 0; i < number; i++)
       {
         String e = (String)((Map.Entry)sl.get(i)).getKey();
         team += e;
@@ -213,6 +210,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    **/
   public void get_Votes(String yays){
     votedyay = yays;
+    votednay = "";
     for(int i = 0; i < players.length(); i++)
     {
       if(votedyay.indexOf(players.charAt(i)) == -1) votednay += players.charAt(i);
@@ -279,7 +277,10 @@ public class ErnieBae implements cits3001_2016s2.Agent{
    * @return a string containing the name of each accused agent.
    * */
   public String do_Accuse(){
-    updateSpyish();
+    if(!spy)
+    {
+      updateSpyish();
+    }
     return "";
   }
 
@@ -305,8 +306,9 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     for(int i = 0; i < players.length(); i++)
     {
       String pl = String.valueOf(players.charAt(i));
-      spyish.put(pl, (double)spies.length() / (double)players.length());
+      spyish.put(pl, (double)spies.length() / ((double)players.length() - 1));
     }
+    spyish.put(name, 0.0);
   }
 
   private void updateSpyish(){
@@ -320,25 +322,23 @@ public class ErnieBae implements cits3001_2016s2.Agent{
     for(int i = 0; i < players.length(); i++)
     {
       ArrayList<String> pointless = new ArrayList<String>();
-      boolean onMish = false;
+
       String cur = String.valueOf(players.charAt(i));
+      boolean onMish = (mishTeam.contains(cur));
       String notcur;
-      for(int j = 0; j < mishTeam.length(); j++)
-      {
-        if(cur.charAt(0) == mishTeam.charAt(j))
-        {
-          onMish = true;
-        }
-      }
+
       if(onMish)
       {
         pA = spyish.get(cur);
         pB = calcpXX(mishTeam, numTraitors, ncombOnMish);
+
         notcur = mishTeam.replace(cur,"");
         pointless.add(notcur);
+        debug(notcur + " not cur");
+
         pBa = calcpXX(mishTeam, (numTraitors - 1), pointless);
         pAb = doBae(pA, pB, pBa);
-        debug(pA +" "+ pB +" "+ pBa +" "+ pAb +" "+ "pa,pb,pba,pab");
+        debug(spyish.toString() + " dpyish");
         spyish.put(cur, pAb);
       }
       else
@@ -350,7 +350,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
         pBa = calcpXX(notonTeam, ((spies.length() - numTraitors) - 1), pointless);
         pAb = doBae(pA, pB, pBa);
         spyish.put(cur, pAb);
-        debug(pA +" "+ pB +" "+ pBa +" "+ pAb +" "+ "pa,pb,pba,pab");
+        //debug(pA +" "+ pB +" "+ pBa +" "+ pAb +" "+ "pa,pb,pba,pab");
       }
     }
   }
@@ -391,47 +391,43 @@ public class ErnieBae implements cits3001_2016s2.Agent{
   }
 
   private double calcpXX(String mTeam, int numTraitors, ArrayList<String> combinations){
+    double pB = 0.0;
     if(numTraitors == 0)
     {
       return 1.0;
     }
-    else{
-      double pB = 0.0;
+    else
+    {
       for(int k = 0; k < combinations.size(); k++)
       {
         String curcomb = combinations.get(k);
+        String notcomb = "";
         String[] currents = new String[curcomb.length()];
         for(int j = 0; j < curcomb.length(); j++)
         {
           currents[j] = String.valueOf(curcomb.charAt(j));
+        }
+        for(int j = 0; j < mTeam.length(); j++)
+        {
+          if(!curcomb.contains(String.valueOf(mTeam.charAt(j))))
+          {
+            notcomb += mTeam.charAt(j);
+          }
         }
         double pBk = 1.0;
         for(int m = 0; m < currents.length; m++)
         {
           pBk *= spyish.get(currents[m]);
         }
-        for(int i = 0; i < mTeam.length(); i++)
+        for(int m = 0; m < notcomb.length(); m++)
         {
-          String cur = String.valueOf(mTeam.charAt(i));
-          boolean notincomb = true;
-          for(int z = 0; z < currents.length; z++)
-          {
-            if(cur == currents[z])
-            {
-              notincomb = false;
-            }
-          }
-          if(notincomb)
-          {
-            pBk *= (1 - spyish.get(cur));
-          }
+          pBk *= (1 - spyish.get(String.valueOf(notcomb.charAt(m))));
         }
         pB += pBk;
       }
       return pB;
     }
   }
-
   static <K,V extends Comparable<? super V>> List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
 
       List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
