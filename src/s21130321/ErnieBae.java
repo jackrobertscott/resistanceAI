@@ -22,7 +22,7 @@ import cits3001_2016s2.*;
  * @author Tim French
  * **/
 
-public class Ernie21130321 implements cits3001_2016s2.Agent{
+public class ErnieBae implements cits3001_2016s2.Agent{
 
   private String name;
   private String players;
@@ -30,6 +30,7 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
   private String notSpies;
   private char leader;
   private String mishTeam;
+  private String notonTeam;
   private String votedyay;
   private String votednay;
 
@@ -43,18 +44,30 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
   private int votingRound;
   private int numTraitors;
 
-Double [] xs;
-  Map spyish;
-  Map ff;
+  private HashMap<String, Double> spyish;
 
-  public Ernie21130321(){
+  private ArrayList<String> ncombOnMish;
+  private ArrayList<String> ncombOffMish;
+  private List sl;
+  private boolean DEBUG;
+
+  public ErnieBae(){
+    DEBUG = true;
     notSpies = "";
     votednay = "";
+    notonTeam = "";
     failedLast = false;
+    spy = false;
     votingRound = 0;
-    Double [] xsp = {0.886376, 0.4455828, 0.9970207, 0.3436828, 0.8449278,0.3919858, 0.8398001, 0.2361175, 0.9078746, 0.2775158,0.3608134, 0.2737935, 0.08736814, 0.7127835, 0.4166021};
-    xs = xsp;
-    setupff();
+    ncombOnMish = new ArrayList<String>();
+    ncombOffMish = new ArrayList<String>();
+  }
+  public void debug(String a){
+    if(DEBUG)
+    {
+      System.out.println("DE~BUG: " + a);
+    }
+
   }
 
   /**
@@ -71,13 +84,18 @@ Double [] xs;
     this.players = players;
     this.spies = spies;
     this.fails = failures;
-    spy = spies.indexOf(name)!=-1;
-
-    if(nextMish == 1){
-      setupspyish();
+    if(spies.indexOf(name) != -1)
+    {
+      spy = true;
     }
 
-    if(spy){
+
+    if(nextMish == 1){
+      initSpyish();
+    }
+
+    if(spy)
+    {
       for(int i = 0; i < players.length(); i++)
       {
         char guy = players.charAt(i);
@@ -85,11 +103,9 @@ Double [] xs;
           notSpies += guy;
         }
       }
-      for(int j = 0; j < spies.length(); j++)
-      {
-        spyish.put(spies.charAt(j), 1.0);
-      }
+      debug(notSpies + spy + " not Spies");
     }
+
   }
 
   /**
@@ -112,19 +128,20 @@ Double [] xs;
       return team;
     }
     else{
-
+      sl = entriesSortedByValues(spyish);
+      debug(Arrays.toString(sl.toArray()) + " sorted list");
       String team = name;
-      List sl = entriesSortedByValues(spyish);
-
-      for(int i = 0 ; i < number - 1; i++)
+      for(int i = 0; i < number - 1; i++)
       {
-        char e = (char)((Map.Entry)sl.get(i)).getKey();
+        String e = (String)((Map.Entry)sl.get(i)).getKey();
         team += e;
       }
+      debug(team + " team");
       return team;
     }
     //(Selection) Include itself when selecting teams; lowers probability of spy on team
     //(Selection) (Spy) Include one spy when selecting teams (always self).
+
   }
 
   /**
@@ -136,9 +153,6 @@ Double [] xs;
     votingRound++;
     this.leader = leader.charAt(0);;
     this.mishTeam = mission;
-
-    //selectsTeamFeaturingSelf: Frequency of subject selecting teams featuring itself.
-    updatespyish(this.leader, ff.get("selectsTeamFeaturingSelf"));
   }
 
   /**
@@ -160,13 +174,25 @@ Double [] xs;
 
       //(Voting) Reject missions with known spies on the team.
       // if probability is high to fail the mission false limit determined by trial and error
-      double teamrisk = 0.0;
-      for(int i = 0 ; i < mishTeam.length() - 1; i++)
+
+      //calculate minimum bae value for team of size.
+      sl = entriesSortedByValues(spyish);
+      double minbae = 0.0;
+      double mishbae = 0.0;
+
+      for(int i = 0; i < mishTeam.length(); i++)
       {
-        double e = (double)spyish.get(mishTeam.charAt(i));
-        teamrisk += e;
+        minbae+=(double)((Map.Entry)sl.get(i)).getValue();
       }
-      if(teamrisk / (double)mishTeam.length() >= xs[14]) return false;
+      debug(String.valueOf(minbae) + "MinBae");
+      //calculate bae value for this team
+      for(int i = 0; i < mishTeam.length(); i++)
+      {
+        mishbae+=spyish.get(String.valueOf(mishTeam.charAt(i)));
+      }
+      debug(String.valueOf(mishbae) + "MishBae");
+      //decide if its good enough within certain percentage
+      if(mishbae > minbae + (minbae / 5)) return false;
       return true;
     }
     else{
@@ -190,19 +216,10 @@ Double [] xs;
     for(int i = 0; i < players.length(); i++)
     {
       if(votedyay.indexOf(players.charAt(i)) == -1) votednay += players.charAt(i);
+
     }
-    for(int i = 0; i < players.length(); i++)
-    {
-      String guy = String.valueOf(players.charAt(i));
-      boolean onteam = mishTeam.contains(guy);
-      boolean votyay = votedyay.contains(guy);
-      //votesForTeamNotFeaturingSelf: Frequency of subject voting for teams not featuring itself.
-      if(!onteam && votyay) updatespyish(leader, ff.get("votesForTeamNotFeaturingSelf"));
-      //votesForTeamFeaturingSelf: Frequency of subject voting for teams featuring itself.
-      if(onteam && votyay) updatespyish(leader, ff.get("votesForTeamFeaturingSelf"));
-      //votesAgainstTeamOnFifthAttempt: Frequency of subject voting against teams on the fifth voting attempt
-      if(!votyay && votingRound == 5) updatespyish(leader, ff.get("votesAgainstTeamOnFifthAttempt"));
-    }
+    debug(votednay + "voted nay");
+    //TODO:include votes into calculation.
   }
 
   /**
@@ -212,6 +229,16 @@ Double [] xs;
    **/
   public void get_Mission(String mission){
     votingRound = 0;
+    this.mishTeam = mission;
+    notonTeam = "";
+    for(int i = 0; i < players.length(); i++)
+    {
+      if(!mishTeam.contains(String.valueOf(players.charAt(i))))
+      {
+        notonTeam += players.charAt(i);
+      }
+    }
+    debug(notonTeam + " not on team");
   }
 
   /**
@@ -252,7 +279,7 @@ Double [] xs;
    * @return a string containing the name of each accused agent.
    * */
   public String do_Accuse(){
-    roundResult();
+    updateSpyish();
     return "";
   }
 
@@ -269,72 +296,142 @@ Double [] xs;
     {
       if(spies.indexOf(mishTeam.charAt(i)) != -1) numSpiesOnMish++;
     }
+    debug(numSpiesOnMish + " numSpiesOnMish");
     return numSpiesOnMish;
   }
 
-  private void setupspyish(){
-    spyish = new HashMap();
+  private void initSpyish(){
+    spyish = new HashMap<String, Double>();
     for(int i = 0; i < players.length(); i++)
     {
-      //x = spys/players
-      spyish.put(players.charAt(i), 0.0);
+      String pl = String.valueOf(players.charAt(i));
+      spyish.put(pl, (double)spies.length() / (double)players.length());
     }
   }
-  private void updatespyish(char p, Object fa){
-    double val = (double)spyish.get(p);
-    double fff = (double)fa;
-    val = val + fff;
-    //if(val > 1) val = 1;
-    //if(val < 0) val = 0;
-    spyish.put(p, val);
-  }
-  private void roundResult(){
-    if(failedLast){
-      //who selected it (leader)
-      //selectsUnsuccessfulTeam
-      updatespyish(leader, ff.get("selectsUnsuccessfulTeam"));
-      //who voted for it
-      //votesForUnsuccessfulTeam
-      for(int i = 0; i < votedyay.length(); i++)
+
+  private void updateSpyish(){
+    double pA, pB, pBa, pAb;
+    //update combinations
+    ncombOnMish.clear();
+    ncombOffMish.clear();
+    debug(mishTeam + " " + notonTeam + " mishteam and not team");
+    combOnMish(mishTeam, new StringBuffer(), 0, numTraitors);
+    combOffMish(notonTeam,new StringBuffer(), 0, (spies.length() - numTraitors));
+    for(int i = 0; i < players.length(); i++)
+    {
+      ArrayList<String> pointless = new ArrayList<String>();
+      boolean onMish = false;
+      String cur = String.valueOf(players.charAt(i));
+      String notcur;
+      for(int j = 0; j < mishTeam.length(); j++)
       {
-        updatespyish(votedyay.charAt(i), ff.get("votesForUnsuccessfulTeam"));
+        if(cur.charAt(0) == mishTeam.charAt(j))
+        {
+          onMish = true;
+        }
       }
-      //who voted against it
-      //votesAgainstUnsuccessfulTeam
-      for(int i = 0; i < votednay.length(); i++)
+      if(onMish)
       {
-        updatespyish(votednay.charAt(i), ff.get("votesAgainstUnsuccessfulTeam"));
+        pA = spyish.get(cur);
+        pB = calcpXX(mishTeam, numTraitors, ncombOnMish);
+        notcur = mishTeam.replace(cur,"");
+        pointless.add(notcur);
+        pBa = calcpXX(mishTeam, (numTraitors - 1), pointless);
+        pAb = doBae(pA, pB, pBa);
+        debug(pA +" "+ pB +" "+ pBa +" "+ pAb +" "+ "pa,pb,pba,pab");
+        spyish.put(cur, pAb);
       }
-      //who was on the team
-      //teamOnIsUnsuccessful
-      for(int i = 0; i < mishTeam.length(); i++)
+      else
       {
-        updatespyish(mishTeam.charAt(i), ff.get("teamOnIsUnsuccessful"));
-      }
-    } else {
-      //who selected it (leader)
-      //selectsSuccessfulTeam
-      updatespyish(leader, ff.get("selectsSuccessfulTeam"));
-      //who voted for it
-      //votesForSuccessfulTeam
-      for(int i = 0; i < votedyay.length(); i++)
-      {
-        updatespyish(votedyay.charAt(i), ff.get("votesForSuccessfulTeam"));
-      }
-      //who voted against it
-      //votesAgainstSuccessfulTeam
-      for(int i = 0; i < votednay.length(); i++)
-      {
-        updatespyish(votednay.charAt(i), ff.get("votesAgainstSuccessfulTeam"));
-      }
-      //who was on the team
-      //teamOnIsSuccessful
-      for(int i = 0; i < mishTeam.length(); i++)
-      {
-        updatespyish(mishTeam.charAt(i), ff.get("teamOnIsSuccessful"));
+        pA = spyish.get(cur);
+        pB = calcpXX(notonTeam, (spies.length() - numTraitors), ncombOffMish);
+        notcur = notonTeam.replace(cur,"");
+        pointless.add(notcur);
+        pBa = calcpXX(notonTeam, ((spies.length() - numTraitors) - 1), pointless);
+        pAb = doBae(pA, pB, pBa);
+        spyish.put(cur, pAb);
+        debug(pA +" "+ pB +" "+ pBa +" "+ pAb +" "+ "pa,pb,pba,pab");
       }
     }
   }
+
+  private double doBae(double pA, double pB, double pBa){
+    return (pBa * pA) / pB;
+  }
+
+  //adds all the combinations of a string input, with length choose, to an arraylist
+  private void combOnMish(String input, StringBuffer x, int index, int choose)
+  {
+
+    for(int i = index; i < input.length(); i++)
+    {
+      x.append(input.charAt(i));
+      if(x.length() == choose)
+      {
+        ncombOnMish.add(x.toString());
+        debug(x.toString() + " combon");
+      }
+      combOnMish(input, x, i + 1, choose);
+      x.deleteCharAt(x.length() - 1);
+    }
+  }
+  private void combOffMish(String input, StringBuffer y, int index, int choose)
+  {
+    for(int i = index; i < input.length(); i++)
+    {
+      y.append(input.charAt(i));
+      if(y.length() == choose)
+      {
+        ncombOffMish.add(y.toString());
+        debug(y.toString() + " comboff");
+      }
+      combOffMish(input, y, i + 1, choose);
+      y.deleteCharAt(y.length() - 1);
+    }
+  }
+
+  private double calcpXX(String mTeam, int numTraitors, ArrayList<String> combinations){
+    if(numTraitors == 0)
+    {
+      return 1.0;
+    }
+    else{
+      double pB = 0.0;
+      for(int k = 0; k < combinations.size(); k++)
+      {
+        String curcomb = combinations.get(k);
+        String[] currents = new String[curcomb.length()];
+        for(int j = 0; j < curcomb.length(); j++)
+        {
+          currents[j] = String.valueOf(curcomb.charAt(j));
+        }
+        double pBk = 1.0;
+        for(int m = 0; m < currents.length; m++)
+        {
+          pBk *= spyish.get(currents[m]);
+        }
+        for(int i = 0; i < mTeam.length(); i++)
+        {
+          String cur = String.valueOf(mTeam.charAt(i));
+          boolean notincomb = true;
+          for(int z = 0; z < currents.length; z++)
+          {
+            if(cur == currents[z])
+            {
+              notincomb = false;
+            }
+          }
+          if(notincomb)
+          {
+            pBk *= (1 - spyish.get(cur));
+          }
+        }
+        pB += pBk;
+      }
+      return pB;
+    }
+  }
+
   static <K,V extends Comparable<? super V>> List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
 
       List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
@@ -350,31 +447,4 @@ Double [] xs;
 
       return sortedEntries;
   }
-
-  private void setupff(){
-    ff = new HashMap();
-    Random r = new Random();
-
-    ff.put("selectsSuccessfulTeam", xs[2] * -1.0);
-    ff.put("selectsUnsuccessfulTeam", xs[2]);
-
-    ff.put("votesForSuccessfulTeam",xs[4] * -1.0);
-    ff.put("votesForUnsuccessfulTeam", xs[4]);
-
-    ff.put("votesAgainstSuccessfulTeam", xs[6] );
-    ff.put("votesAgainstUnsuccessfulTeam", xs[6] * -1.0);
-
-    ff.put("teamOnIsUnsuccessful", xs[8] );
-    ff.put("teamOnIsSuccessful", xs[8] * -1.0);
-
-    ff.put("votesForTeamFeaturingSelf", xs[11] * -1.0);
-    ff.put("votesForTeamNotFeaturingSelf", xs[11]);
-    ff.put("votesAgainstTeamOnFifthAttempt", 1.0);
-
-    ff.put("selectsTeamFeaturingSelf", xs[13] * -1.0);
-
-    //ff.put("selectsTeamIHate", x[14]);
-    //ff.put("selectsTeamILike", x[15]);
-  }
-
 }

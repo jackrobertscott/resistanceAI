@@ -325,9 +325,10 @@ public class Game{
     Game g = new Game();
     char[] things = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'};
     int x = Integer.parseInt(args[0]);
+    g.stopwatchOn();g.addPlayer(new HumanAgent());g.stopwatchOff(1000,'J');
    for(int i = 0; i < x; i++)
     {
-      g.stopwatchOn();g.addPlayer(new RandomAgent());g.stopwatchOff(1000,things[i]);
+      g.stopwatchOn();g.addPlayer(new s21130321.ErnieBae());g.stopwatchOff(1000,things[i]);
    }
   g.setup();
   g.play();
