@@ -15,7 +15,7 @@ import java.util.*;
  * Last Revision: 31-10-16
  **/
 public class TheAccountant implements cits3001_2016s2.Agent {
-    private final static boolean DEBUG = true;
+    private final static boolean DEBUG = false;
 
     private String name; // agent name
     private String players; // all players in the game
