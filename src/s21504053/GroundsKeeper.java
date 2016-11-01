@@ -11,6 +11,8 @@ import java.util.*;
  * Last Revision: 31-10-16
  */
 public class GroundsKeeper {
+    private final static boolean DEBUG = false;
+
     private HashMap<Move, Integer[]> longTermSpy;
     private HashMap<Move, Integer[]> longTermNonSpy;
     private HashMap<Move, Double> potion;
@@ -145,7 +147,7 @@ public class GroundsKeeper {
         for (Move move : potion.keySet()) {
             msg += move.name() + ": " + potion.get(move) + "\n";
         }
-        System.out.print(msg);
+        debug(msg);
     }
 
     /**
@@ -186,7 +188,7 @@ public class GroundsKeeper {
     public void printLongTermSpy() {
         String msg = movesToString(longTermSpy);
         msg += "IS_SPY: true\n";
-        System.out.println(msg);
+        debug(msg);
     }
 
     /**
@@ -195,6 +197,17 @@ public class GroundsKeeper {
     public void printLongTermNonSpy() {
         String msg = movesToString(longTermNonSpy);
         msg += "IS_SPY: false\n";
-        System.out.println(msg);
+        debug(msg);
+    }
+
+    /**
+     * Log debug text to the console when set to debug mode
+     *
+     * @param msg the message to log
+     */
+    private void debug(String msg) {
+        if (DEBUG) {
+            System.out.println("~~~DEBUG: " + msg);
+        }
     }
 }
