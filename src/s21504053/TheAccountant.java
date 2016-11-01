@@ -1,3 +1,9 @@
+/**
+ * Author: Jack Scott
+ * Student #: 21054053
+ * Last Revision: 31-10-16
+ */
+
 package s21504053;
 
 import cits3001_2016s2.*;
@@ -10,10 +16,6 @@ import java.util.*;
  * The agent will be created entirely in a single game, and the agent must maintain its own state.
  * Methods will be used for informing agents of game events (get_ methods, must return in 100ms) or requiring actions (do_ methods, must return in 1000ms).
  * If actions do not meet the required specification, a nominated default action will be recorded.
- *
- * Author: Jack Scott
- * Student #: 21054053
- * Last Revision: 31-10-16
  **/
 public class TheAccountant implements Agent {
     private final static boolean DEBUG = false;

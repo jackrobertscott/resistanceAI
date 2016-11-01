@@ -1,3 +1,9 @@
+/**
+ * Author: Jack Scott
+ * Student #: 21054053
+ * Last Revision: 31-10-16
+ */
+
 package s21504053;
 
 import java.io.*;
@@ -5,10 +11,6 @@ import java.util.*;
 
 /**
  * Analytical helper class for AI agents which play the game 'The Resistance'.
- *
- * Author: Jack Scott
- * Student #: 21054053
- * Last Revision: 31-10-16
  */
 public class GroundsKeeper {
     private final static boolean DEBUG = false;
