@@ -1,5 +1,6 @@
 package s21504053;
 
+import cits3001_2016s2.*;
 import java.util.*;
 
 /**
@@ -14,7 +15,7 @@ import java.util.*;
  * Student #: 21054053
  * Last Revision: 31-10-16
  **/
-public class TheAccountant implements cits3001_2016s2.Agent {
+public class TheAccountant implements Agent {
     private final static boolean DEBUG = false;
 
     private String name; // agent name
