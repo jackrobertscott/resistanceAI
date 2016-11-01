@@ -10,7 +10,9 @@ import java.util.*;
  * Methods will be used for informing agents of game events (get_ methods, must return in 100ms) or requiring actions (do_ methods, must return in 1000ms).
  * If actions do not meet the required specification, a nominated default action will be recorded.
  *
- * @author Jack Scott
+ * Author: Jack Scott
+ * Student #: 21054053
+ * Last Revision: 31-10-16
  **/
 public class LogicMan implements cits3001_2016s2.Agent {
     private final static boolean DEBUG = true;

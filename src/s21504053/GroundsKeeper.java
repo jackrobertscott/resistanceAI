@@ -3,24 +3,41 @@ package s21504053;
 import java.io.*;
 import java.util.*;
 
+/**
+ * Analytical helper class for AI agents which play the game 'The Resistance'.
+ *
+ * Author: Jack Scott
+ * Student #: 21054053
+ * Last Revision: 31-10-16
+ */
 public class GroundsKeeper {
     private HashMap<Move, Integer[]> longTermSpy;
     private HashMap<Move, Integer[]> longTermNonSpy;
     private HashMap<Move, Double> potion;
 
+    /**
+     * Provide the grounds keeper for a normal implementation.
+     */
     public GroundsKeeper() {
         longTermSpy = createMoves();
         longTermNonSpy = createMoves();
         potion = new HashMap<Move, Double>();
+        // brewPotion(); // this updates the learning statistics file with new values
+
+        // constant values pulled from a the statistics file after numerous rounds
         potion.put(Move.ON_TEAM_SUCCESSFUL, -0.21602841261031208);
         potion.put(Move.VOTED_TEAM_UNSUCCESSFUL, -0.01624830422512291);
         potion.put(Move.VOTED_TEAM_SUCCESSFUL, 0.011160445981332368);
         potion.put(Move.SELECTED_TEAM_SUCCESSFUL, -0.0020137262762822405);
         potion.put(Move.SELECTED_TEAM_UNSUCCESSFUL, 0.003684308429803246);
         potion.put(Move.ON_TEAM_UNSUCCESSFUL, 0.20429202266224666);
-        // brewPotion();
     }
 
+    /**
+     * This constructor is used to read statistics from a memory file.
+     *
+     * @param file the path to the memory file
+     */
     public GroundsKeeper(String file) {
         longTermSpy = createMoves();
         longTermNonSpy = createMoves();
