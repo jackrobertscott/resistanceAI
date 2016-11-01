@@ -1,7 +1,8 @@
 package cits3001_2016s2;
 
 
-import s21130321.Ernie21130321;
+import s21130321.ErnieGenetics21130321;
+import s21130321.ErnieBae21130321;
 import s21504053.BoneCrusher;
 import s21504053.GroundsKeeper;
 import s21504053.LogicMan;
@@ -315,7 +316,7 @@ public class Game{
       }
     }
     Arrays.sort(agents);
-    String ret = 
+    String ret =
     "<html><body><table><tr><th>Name</th><th>Author</th><th>Spy Wins</th><th>Spy Plays</th><th>Res Wins</th><th>Res Plays</th><th>Win Rate</th><th>Spy Win Rate</th><th>Res Win Rate</th></tr>";
     for(int i = 0; i< agents.length; i++)
       ret+= agents[i];
@@ -347,6 +348,6 @@ public class Game{
 //    gk.printLongTermSpy();
 //    gk.printLongTermNonSpy();
   }
-  
+
 
 }

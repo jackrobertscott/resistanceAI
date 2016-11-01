@@ -16,8 +16,8 @@ public class Run{
         new Competitor(new cits3001_2016s2.RandomAgent(),"Randy","Tim"),
         new Competitor(new s21504053.BoneCrusher(),"BoneCrusher","Jack"),
         new Competitor(new s21504053.LogicMan(),"LogicMan","Ruley"),
-        new Competitor(new s21130321.Ernie21130321(),"Ernie","Tahmer"),
-        new Competitor(new s21130321.ErnieBae(), "Bae", "Baeblade")
+        new Competitor(new s21130321.ErnieGenetics21130321(),"Ernie","Tahmer"),
+        new Competitor(new s21130321.ErnieBae21130321(), "Bae", "Baeblade")
 
       };
       fw.write(Game.tournament(contenders, 10000));

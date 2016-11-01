@@ -22,7 +22,7 @@ import cits3001_2016s2.*;
  * @author Tim French
  * **/
 
-public class Ernie21130321 implements cits3001_2016s2.Agent{
+public class ErnieGenetics21130321 implements cits3001_2016s2.Agent{
 
   private String name;
   private String players;
@@ -32,28 +32,28 @@ public class Ernie21130321 implements cits3001_2016s2.Agent{
   private String mishTeam;
   private String votedyay;
   private String votednay;
-
   private boolean spy;
   private boolean failedLast;
-
   private Random random;
-
   private int nextMish;
   private int fails;
   private int votingRound;
   private int numTraitors;
-
-Double [] xs;
+  //stores the genetic chromesone
+  Double [] chrome;
   Map spyish;
   Map ff;
 
-  public Ernie21130321(){
+  public ErnieGenetics21130321(){
     notSpies = "";
     votednay = "";
     failedLast = false;
     votingRound = 0;
-    Double [] xsp = {0.886376, 0.4455828, 0.9970207, 0.3436828, 0.8449278,0.3919858, 0.8398001, 0.2361175, 0.9078746, 0.2775158,0.3608134, 0.2737935, 0.08736814, 0.7127835, 0.4166021};
-    xs = xsp;
+    //this is the resulting best chromesone after 24 hours of mutations
+    //each chromesone played 5000 games against the current champion
+    //if after 5000 games this chromesone had a higher win rate, the champion was updated.
+    Double [] chromep = {0.4455828, 0.3436828, 0.3919858, 0.2361175, 0.3608134, 0.08736814, 0.7127835, 0.4166021};
+    chrome = chromep;
     setupff();
   }
 
@@ -72,11 +72,12 @@ Double [] xs;
     this.spies = spies;
     this.fails = failures;
     spy = spies.indexOf(name)!=-1;
-
-    if(nextMish == 1){
+    //if not spy setup spy suspicions
+    if(nextMish == 1 && !spy){
       setupspyish();
     }
 
+    //if you are a spy then make a stinrg with not spies
     if(spy){
       for(int i = 0; i < players.length(); i++)
       {
@@ -84,10 +85,6 @@ Double [] xs;
         if(spies.indexOf(guy) == -1){
           notSpies += guy;
         }
-      }
-      for(int j = 0; j < spies.length(); j++)
-      {
-        spyish.put(spies.charAt(j), 1.0);
       }
     }
   }
@@ -101,6 +98,7 @@ Double [] xs;
    * */
   public String do_Nominate(int number){
     Random r = new Random();
+    //if spy select self and two random not spies.
     if(spy)
     {
       String team = name;
@@ -111,9 +109,9 @@ Double [] xs;
       }
       return team;
     }
+    //if not a spy select the required number of least suspicious agents
     else{
-
-      String team = name;
+      String team = "";
       List sl = entriesSortedByValues(spyish);
 
       for(int i = 0 ; i < number - 1; i++)
@@ -123,8 +121,6 @@ Double [] xs;
       }
       return team;
     }
-    //(Selection) Include itself when selecting teams; lowers probability of spy on team
-    //(Selection) (Spy) Include one spy when selecting teams (always self).
   }
 
   /**
@@ -137,7 +133,7 @@ Double [] xs;
     this.leader = leader.charAt(0);;
     this.mishTeam = mission;
 
-    //selectsTeamFeaturingSelf: Frequency of subject selecting teams featuring itself.
+    //selectsTeamFeaturingSelf: Frequency of subject selecting teams featuring itself
     updatespyish(this.leader, ff.get("selectsTeamFeaturingSelf"));
   }
 
@@ -159,14 +155,14 @@ Double [] xs;
       if(players.length() == 5 || (mishTeam.indexOf(name) == -1)) return false;
 
       //(Voting) Reject missions with known spies on the team.
-      // if probability is high to fail the mission false limit determined by trial and error
+      // if probability is high to fail the mission false limit determined by genetic things
       double teamrisk = 0.0;
       for(int i = 0 ; i < mishTeam.length() - 1; i++)
       {
         double e = (double)spyish.get(mishTeam.charAt(i));
         teamrisk += e;
       }
-      if(teamrisk / (double)mishTeam.length() >= xs[14]) return false;
+      if(teamrisk / (double)mishTeam.length() >= chrome[7]) return false;
       return true;
     }
     else{
@@ -187,6 +183,7 @@ Double [] xs;
    **/
   public void get_Votes(String yays){
     votedyay = yays;
+    votednay = "";
     for(int i = 0; i < players.length(); i++)
     {
       if(votedyay.indexOf(players.charAt(i)) == -1) votednay += players.charAt(i);
@@ -224,8 +221,8 @@ Double [] xs;
     }
     else{
       int sOM = numSpiesOnMish();
-      if (fails == 2) return true;
-      if (fails == 1 && nextMish == 4) return true;
+      if (fails == 2) return true; //if on two fails then fail regardless of situatuion
+      if (fails == 1 && nextMish == 4) return true; //if only 1 fail on the 4th mission fail regardless
       if(mishTeam.length() == 2) return false; //dont fail if its only you and another.
       if(sOM > 2) return false; //more than one spy then let them fail it.
       return true;
@@ -252,7 +249,11 @@ Double [] xs;
    * @return a string containing the name of each accused agent.
    * */
   public String do_Accuse(){
-    roundResult();
+    //update the spyish-ness
+    if(!spy)
+    {
+          roundResult();
+    }
     return "";
   }
 
@@ -263,6 +264,10 @@ Double [] xs;
    * */
   public void get_Accusation(String accuser, String accused){}
 
+  /*
+  * this fcuntion returns the number of spies that are on a missions
+  * @return num spies
+  */
   private int numSpiesOnMish(){
     int numSpiesOnMish = 0;
     for(int i = 0; i < mishTeam.length(); i++)
@@ -272,23 +277,37 @@ Double [] xs;
     return numSpiesOnMish;
   }
 
+  /**
+  * this initialises the spyish-ness of each agent at the beginning of the game
+  **/
   private void setupspyish(){
     spyish = new HashMap();
     for(int i = 0; i < players.length(); i++)
     {
-      //x = spys/players
+      //everyone starts neutral at 0
       spyish.put(players.charAt(i), 0.0);
     }
   }
+
+  /*
+  * this puts increments the agents suspicion level by some amount
+  * @param p is the player to update this for.
+  * @param fa the amount to increment the suspicion level by
+  */
   private void updatespyish(char p, Object fa){
-    double val = (double)spyish.get(p);
-    double fff = (double)fa;
-    val = val + fff;
-    //if(val > 1) val = 1;
-    //if(val < 0) val = 0;
-    spyish.put(p, val);
+    if(!spy){
+      double val = (double)spyish.get(p);
+      double fff = (double)fa;
+      val = val + fff;
+      spyish.put(p, val);
+    }
   }
+  /*
+  * does the bulk of the updates after the round has closed
+  *
+  **/
   private void roundResult(){
+    //if the last mission failed.
     if(failedLast){
       //who selected it (leader)
       //selectsUnsuccessfulTeam
@@ -335,6 +354,39 @@ Double [] xs;
       }
     }
   }
+  /**
+  * this sets up a hashmap of the values at the beginning of the game
+  */
+  private void setupff(){
+    ff = new HashMap();
+    Random r = new Random();
+
+    ff.put("selectsSuccessfulTeam", chrome[1] * -1.0);
+    ff.put("selectsUnsuccessfulTeam", chrome[1]);
+
+    ff.put("votesForSuccessfulTeam",chrome[2] * -1.0);
+    ff.put("votesForUnsuccessfulTeam", chrome[2]);
+
+    ff.put("votesAgainstSuccessfulTeam", chrome[3] );
+    ff.put("votesAgainstUnsuccessfulTeam", chrome[3] * -1.0);
+
+    ff.put("teamOnIsUnsuccessful", chrome[4] );
+    ff.put("teamOnIsSuccessful", chrome[4] * -1.0);
+
+    ff.put("votesForTeamFeaturingSelf", chrome[5] * -1.0);
+    ff.put("votesForTeamNotFeaturingSelf", chrome[5]);
+
+    ff.put("votesAgainstTeamOnFifthAttempt", 1.0);
+
+    ff.put("selectsTeamFeaturingSelf", chrome[6] * -1.0);
+  }
+
+
+  /*
+  * this returns a List of the map entries sorted by lowest valueOf
+  * @param map with the key value pair to be sorted
+  * @return a list of those map entries
+  */
   static <K,V extends Comparable<? super V>> List<Map.Entry<K, V>> entriesSortedByValues(Map<K,V> map) {
 
       List<Map.Entry<K,V>> sortedEntries = new ArrayList<Map.Entry<K,V>>(map.entrySet());
@@ -349,32 +401,6 @@ Double [] xs;
       );
 
       return sortedEntries;
-  }
-
-  private void setupff(){
-    ff = new HashMap();
-    Random r = new Random();
-
-    ff.put("selectsSuccessfulTeam", xs[2] * -1.0);
-    ff.put("selectsUnsuccessfulTeam", xs[2]);
-
-    ff.put("votesForSuccessfulTeam",xs[4] * -1.0);
-    ff.put("votesForUnsuccessfulTeam", xs[4]);
-
-    ff.put("votesAgainstSuccessfulTeam", xs[6] );
-    ff.put("votesAgainstUnsuccessfulTeam", xs[6] * -1.0);
-
-    ff.put("teamOnIsUnsuccessful", xs[8] );
-    ff.put("teamOnIsSuccessful", xs[8] * -1.0);
-
-    ff.put("votesForTeamFeaturingSelf", xs[11] * -1.0);
-    ff.put("votesForTeamNotFeaturingSelf", xs[11]);
-    ff.put("votesAgainstTeamOnFifthAttempt", 1.0);
-
-    ff.put("selectsTeamFeaturingSelf", xs[13] * -1.0);
-
-    //ff.put("selectsTeamIHate", x[14]);
-    //ff.put("selectsTeamILike", x[15]);
   }
 
 }

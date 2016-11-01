@@ -2,7 +2,7 @@
 /*
 * Tahmer Hijjawi
 * 21130321
-* version v0.2
+* version v0.3
 */
 
 package s21130321;
@@ -22,7 +22,7 @@ import cits3001_2016s2.*;
  * @author Tim French
  * **/
 
-public class ErnieBae implements cits3001_2016s2.Agent{
+public class ErnieBae21130321 implements cits3001_2016s2.Agent{
 
   private String name;
   private String players;
@@ -49,7 +49,7 @@ public class ErnieBae implements cits3001_2016s2.Agent{
   * constructor
   * initialises a few global variables for global use;
   */
-  public ErnieBae(){
+  public ErnieBae21130321(){
     DEBUG = false;
     notSpies = "";
     votednay = "";
