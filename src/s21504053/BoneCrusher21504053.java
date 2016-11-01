@@ -14,7 +14,7 @@ import java.util.*;
  * Student #: 21054053
  * Last Revision: 31-10-16
  **/
-public class BoneCrusher implements cits3001_2016s2.Agent {
+public class BoneCrusher21504053 implements cits3001_2016s2.Agent {
     private final static boolean DEBUG = false;
 
     private String name; // agent name
@@ -33,7 +33,7 @@ public class BoneCrusher implements cits3001_2016s2.Agent {
     private boolean spy; // is this agent a spy
     private String spies; // all known spies
 
-    public BoneCrusher() {
+    public BoneCrusher21504053() {
         gk = new GroundsKeeper();
         stats = new HashMap<Character, HashMap<Move, Integer[]>>();
         random = new Random();

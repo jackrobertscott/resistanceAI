@@ -1,11 +1,7 @@
 package cits3001_2016s2;
 
-
-import s21130321.Ernie21130321;
-import s21504053.BoneCrusher;
-import s21504053.GroundsKeeper;
-import s21504053.LogicMan;
-import s21504053.TheAccountant;
+import s21504053.*;
+import s21130321.*;
 
 import java.util.*;
 import java.io.*;
