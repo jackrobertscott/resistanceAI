@@ -2,7 +2,6 @@ import cits3001_2016s2.*;
 import s21504053.*;
 import s21130321.*;
 
-import java.util.*;
 import java.io.*;
 
 public class Run{
@@ -14,11 +13,10 @@ public class Run{
       FileWriter fw = new FileWriter(f);
       Competitor[] contenders = {
         new Competitor(new cits3001_2016s2.RandomAgent(),"Randy","Tim"),
-        new Competitor(new s21504053.BoneCrusher(),"BoneCrusher","Jack"),
-        new Competitor(new s21504053.LogicMan(),"LogicMan","Ruley"),
-        new Competitor(new s21130321.ErnieGenetics21130321(),"Ernie","Tahmer"),
-        new Competitor(new s21130321.ErnieBae21130321(), "Bae", "Baeblade")
-
+        new Competitor(new BoneCrusher21504043(),"BoneCrusher","Jack"),
+        new Competitor(new LogicMan(),"LogicMan","Ruley"),
+        new Competitor(new ErnieGenetics21130321(),"Ernie","Tahmer"),
+        new Competitor(new ErnieBae21130321(), "Bae", "Baeblade")
       };
       fw.write(Game.tournament(contenders, 10000));
       fw.close();

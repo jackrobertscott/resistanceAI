@@ -1,11 +1,13 @@
+/**
+ * Author: Jack Scott
+ * Student #: 21054053
+ * Last Revision: 31-10-16
+ */
+
 package s21504053;
 
 /**
  * Enumerated values representing actions that a Agent may take in a game of 'The Resistance'.
- *
- * Author: Jack Scott
- * Student #: 21054053
- * Last Revision: 31-10-16
  **/
 public enum Move {
     SELECTED_TEAM_SUCCESSFUL, // selected a successful team or not
