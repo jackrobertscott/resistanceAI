@@ -13,7 +13,7 @@ public class Run{
       FileWriter fw = new FileWriter(f);
       Competitor[] contenders = {
         new Competitor(new cits3001_2016s2.RandomAgent(),"Randy","Tim"),
-        new Competitor(new BoneCrusher21504043(),"BoneCrusher","Jack"),
+        new Competitor(new BoneCrusher21504053(),"BoneCrusher","Jack"),
         new Competitor(new LogicMan(),"LogicMan","Ruley"),
         new Competitor(new ErnieGenetics21130321(),"Ernie","Tahmer"),
         new Competitor(new ErnieBae21130321(), "Bae", "Baeblade")
